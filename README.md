@@ -185,7 +185,7 @@ DPO ran for four epochs on $6396$ preference pairs. On a validation subset of $2
 One paraphrase per validation and test abstract was generated with the base instruct model and with the fine-tuned checkpoint. Oculus scored each output. Ground-truth label is AI-generated. Threshold on detector probability: $0.5$.
 
 | Model | Split | n | mean prob | mean logit | accuracy | F1 |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
+|---|---|---|---|---|---|---|
 | base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.8032 |
 | base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.7991 |
 | fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.2930 |
@@ -242,18 +242,14 @@ The project is under GPL-3.0 license.
   primaryClass  = {cs.CL},
   url           = {https://arxiv.org/abs/2406.07490}
 }
-```
 
-```bibtex
 @misc{flaglab2025abstracts,
   title         = {{Academic Knowledge Abstracts Spanish}},
   author        = {Flaglab},
   year          = {2025},
   url           = {https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es}
 }
-```
 
-```bibtex
 @misc{oculus2026,
   title         = {{Oculus 2.0 Multilingual AI Text Detector}},
   author        = {danibor},
