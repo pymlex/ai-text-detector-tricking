@@ -8,8 +8,4 @@ if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
-set -a
-source .env
-set +a
-
 python scripts/publish_all.py "$@"

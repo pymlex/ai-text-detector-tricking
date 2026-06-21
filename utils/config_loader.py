@@ -4,6 +4,13 @@ import os
 from pathlib import Path
 
 
+def _unquote_env_value(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
+
+
 def load_env_file(name: str) -> None:
     """Load key-value pairs from a dotenv file into ``os.environ``."""
     path = Path(f".env.{name}")
@@ -16,7 +23,7 @@ def load_env_file(name: str) -> None:
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
         key, value = stripped.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip())
+        os.environ.setdefault(key.strip(), _unquote_env_value(value))
 
 
 def require_env(key: str) -> str:

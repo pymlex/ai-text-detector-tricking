@@ -8,10 +8,6 @@ if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
-set -a
-source .env
-set +a
-
 python scripts/setup_gh_auth.py
 python main.py --step all
 python scripts/push_dataset_hf.py
