@@ -32,7 +32,7 @@ model_id = "pymlex/Qwen2.5-0.5B-Human"
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
 model = AutoModelForCausalLM.from_pretrained(
     model_id,
-    torch_dtype=torch.bfloat16,
+    dtype=torch.bfloat16,
     device_map="auto",
 )
 

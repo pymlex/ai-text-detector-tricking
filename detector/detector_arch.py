@@ -12,7 +12,7 @@ class DesklibAIDetectionModel(PreTrainedModel):
         super().__init__(config)
         self.model = AutoModel.from_config(config)
         self.classifier = nn.Linear(config.hidden_size, 1)
-        self.init_weights()
+        self.post_init()
 
     def forward(
         self,

@@ -51,7 +51,7 @@ def train_dpo(device: torch.device | None = None) -> Path:
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID,
-        torch_dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
+        dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
         device_map="auto" if device.type == "cuda" else None,
     )
     if device.type != "cuda":

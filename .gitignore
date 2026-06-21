@@ -222,6 +222,7 @@ hf_cache/
 results/checkpoints/
 results/data/
 results/preferences/
+results/preferences/paraphrase_cache.jsonl
 *.pt
 *.bin
 *.safetensors

@@ -51,6 +51,37 @@ def _select_pair(
     )
 
 
+PARAPHRASE_CACHE_PATH = PREFERENCES_DIR / "paraphrase_cache.jsonl"
+
+
+def _load_paraphrase_cache(train_texts: list[str]) -> list[list[str]] | None:
+    if not PARAPHRASE_CACHE_PATH.exists():
+        return None
+    rows: list[dict] = []
+    with PARAPHRASE_CACHE_PATH.open(encoding="utf-8") as handle:
+        for line in handle:
+            rows.append(json.loads(line))
+    if len(rows) != len(train_texts):
+        return None
+    groups = [row["paraphrases"] for row in rows]
+    originals = [row["original_text"] for row in rows]
+    if originals != list(train_texts):
+        return None
+    return groups
+
+
+def _save_paraphrase_cache(train_texts: list[str], paraphrase_groups: list[list[str]]) -> None:
+    with PARAPHRASE_CACHE_PATH.open("w", encoding="utf-8") as handle:
+        for original_text, paraphrases in zip(train_texts, paraphrase_groups, strict=True):
+            handle.write(
+                json.dumps(
+                    {"original_text": original_text, "paraphrases": paraphrases},
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+
+
 def build_preference_dataset(device: torch.device | None = None) -> Path:
     """Generate paraphrases, score with Oculus, and save DPO pairs."""
     ensure_result_dirs()
@@ -59,23 +90,32 @@ def build_preference_dataset(device: torch.device | None = None) -> Path:
     splits = load_filtered_splits()
     train_texts = splits["train"][TEXT_COLUMN]
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, use_fast=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
-        torch_dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
-        device_map="auto" if device.type == "cuda" else None,
-    )
-    if device.type != "cuda":
-        model = model.to(device)
-    model.eval()
+    paraphrase_groups = _load_paraphrase_cache(train_texts)
+    if paraphrase_groups is None:
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, use_fast=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_ID,
+            dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
+            device_map="auto" if device.type == "cuda" else None,
+        )
+        if device.type != "cuda":
+            model = model.to(device)
+        model.eval()
 
-    paraphrase_groups = generate_paraphrases(
-        model=model,
-        tokenizer=tokenizer,
-        original_texts=train_texts,
-        device=device,
-        num_samples=PARAPHRASES_PER_TEXT,
-    )
+        paraphrase_groups = generate_paraphrases(
+            model=model,
+            tokenizer=tokenizer,
+            original_texts=train_texts,
+            device=device,
+            num_samples=PARAPHRASES_PER_TEXT,
+        )
+        _save_paraphrase_cache(train_texts, paraphrase_groups)
+        del model
+        del tokenizer
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
+    else:
+        print(f"Loaded cached paraphrases: {PARAPHRASE_CACHE_PATH}")
 
     flat_paraphrases = [item for group in paraphrase_groups for item in group]
     detector = OculusDetector(device=device)

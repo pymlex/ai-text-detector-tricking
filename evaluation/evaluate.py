@@ -67,7 +67,7 @@ def evaluate_model(
     tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
+        dtype=torch.bfloat16 if device.type == "cuda" else torch.float32,
         device_map="auto" if device.type == "cuda" else None,
     )
     if device.type != "cuda":
