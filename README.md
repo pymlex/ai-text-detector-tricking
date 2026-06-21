@@ -172,17 +172,11 @@ From $8891$ train abstracts the pipeline retained $6396$ DPO pairs. $2495$ pairs
 
 Logit margin probe on $512$ train pairs: mean $|z_1 - z_2| = 2.42$, median $1.80$, IQR $[0.87, 3.36]$, maximum gap $11.24$.
 
-![Logit margin probe histogram](results/plots/logit_margin_probe_hist.png)
-
-![Chosen vs rejected logits](results/plots/logit_chosen_rejected_hist.png)
-
 ![Logit probe summary](results/plots/analysis/logit_probe_summary.png)
 
 ### Training
 
 DPO ran for four epochs on $6396$ preference pairs. On a validation subset of $276$ texts, mean detector AI probability at step $0$ was $0.674$ and at the last monitor step $0.244$, a change of $-0.430$. Final logged DPO loss was $0.256$.
-
-![Training summary](results/plots/training_summary.png)
 
 ![Training monitor](results/plots/analysis/training_monitor_analysis.png)
 
@@ -190,22 +184,18 @@ DPO ran for four epochs on $6396$ preference pairs. On a validation subset of $2
 
 One paraphrase per validation and test abstract was generated with the base instruct model and with the fine-tuned checkpoint. Oculus scored each output. Ground-truth label is AI-generated. Threshold on detector probability: $0.5$.
 
-| Model | Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
+| Model | Split | n | mean prob | mean logit | accuracy | F1 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.0000 | n/a | 0.8032 |
-| base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.0000 | n/a | 0.7991 |
-| fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.0000 | n/a | 0.2930 |
-| fine-tuned | test | 1112 | 0.2391 | -1.8733 | 0.1835 | 0.0000 | n/a | 0.3100 |
+| base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.8032 |
+| base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.7991 |
+| fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.2930 |
+| fine-tuned | test | 1112 | 0.2391 | -1.8733 | 0.1835 | 0.3100 |
 
 On the test split the fine-tuned model lowered mean AI probability from $0.653$ to $0.239$ and mean logit from $1.558$ to $-1.873$ relative to the base model. Under the AI-positive labelling convention, accuracy and F1 drop because fewer paraphrases exceed the $0.5$ threshold. MCC remains zero and ROC-AUC is undefined because all ground-truth labels are AI-generated.
 
 ![Evaluation summary](results/plots/analysis/evaluation_summary.png)
 
 ![Score distributions](results/plots/analysis/score_distributions.png)
-
-![Detector probability validation](results/plots/detector_probability_hist_validation.png)
-
-![Detector probability test](results/plots/detector_probability_hist_test.png)
 
 ![Confusion matrix validation](results/plots/confusion_matrix_validation.png)
 
