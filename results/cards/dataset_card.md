@@ -10,9 +10,9 @@ tags:
 - paraphrase
 ---
 
-# ai-generated-texts
+# Spanish DPO Preference Pairs for Detector Evasion
 
-Preference pairs for DPO fine-tuning of `Qwen/Qwen2.5-0.5B-Instruct` against the Oculus multilingual AI text detector on Spanish academic abstracts.
+Preference pairs for DPO fine-tuning of `Qwen/Qwen2.5-0.5B-Instruct` against the Oculus multilingual AI text detector on Spanish academic abstracts. Repository id: [pymlex/ai-generated-texts](https://huggingface.co/datasets/pymlex/ai-generated-texts).
 
 ## Dataset size
 
@@ -23,15 +23,15 @@ Preference pairs for DPO fine-tuning of `Qwen/Qwen2.5-0.5B-Instruct` against the
 | Pairs skipped by logit margin | 2495 |
 | Empty paraphrase pairs | 0 |
 
-Logit margin threshold: $|z_1-z_2| \ge 1$.
+Logit margin threshold: absolute gap at least 1.
 
 ## Dataset construction
 
-For each abstract in the train split of [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), two paraphrases are sampled from the base instruct model with temperature $0.7$. Each paraphrase is scored by [danibor/oculus-v2.0-multilingual](https://huggingface.co/danibor/oculus-v2.0-multilingual). The lower detector logit becomes `chosen`, the higher becomes `rejected`.
+For each abstract in the train split of [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), two paraphrases are sampled from the base instruct model with temperature 0.7. Each paraphrase is scored by [danibor/oculus-v2.0-multilingual](https://huggingface.co/danibor/oculus-v2.0-multilingual). The lower detector logit becomes `chosen`, the higher becomes `rejected`.
 
 ## Logit margin calibration probe
 
-Probe size: 512 paraphrase pairs from the train split. Mean $|z_1-z_2|$: 2.4227. Median: 1.7992. 75th percentile: 3.3554. Maximum gap: 11.2376.
+Probe size: 512 paraphrase pairs from the train split. Mean absolute logit gap: 2.4227. Median: 1.7992. 75th percentile: 3.3554. Maximum gap: 11.2376.
 
 ![Logit margin histogram](https://huggingface.co/datasets/pymlex/ai-generated-texts/resolve/main/assets/logit_margin_probe_hist.png)
 
@@ -47,7 +47,7 @@ Probe size: 512 paraphrase pairs from the train split. Mean $|z_1-z_2|$: 2.4227.
 
 ## Source code
 
-[github.com/pymlex/ai-text-detector-tricking](https://github.com/pymlex/ai-text-detector-tricking)
+The full pipeline is published on [GitHub](https://github.com/pymlex/ai-text-detector-tricking).
 
 ## Citation
 
@@ -56,7 +56,7 @@ If you found this dataset useful, please cite it as:
 ```bibtex
 @dataset{zyukov2026aigeneratedtexts,
   author = {Zyukov, Alex},
-  title = {ai-generated-texts: DPO preference pairs for Spanish abstract paraphrase},
+  title = {Spanish DPO Preference Pairs for Detector Evasion},
   year = {2026},
   url = {https://huggingface.co/datasets/pymlex/ai-generated-texts},
   publisher = {Hugging Face}

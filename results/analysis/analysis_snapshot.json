@@ -23,5 +23,31 @@
     "final_loss": 0.2555682182312012,
     "final_reward_accuracy": null
   },
-  "evaluation": null
+  "evaluation": {
+    "validation": {
+      "split": "validation",
+      "n_samples": 1107,
+      "accuracy": 0.17524841915085818,
+      "precision": 1.0,
+      "recall": 0.17524841915085818,
+      "f1": 0.2982321291314374,
+      "mcc": 0.0,
+      "roc_auc": null,
+      "mean_logit": -2.026107011412547,
+      "mean_probability": 0.22517526002730043
+    },
+    "test": {
+      "split": "test",
+      "n_samples": 1112,
+      "accuracy": 0.18615107913669066,
+      "precision": 1.0,
+      "recall": 0.18615107913669066,
+      "f1": 0.31387414708112205,
+      "mcc": 0.0,
+      "roc_auc": null,
+      "mean_logit": -1.854886487703402,
+      "mean_probability": 0.24130486895322117
+    },
+    "threshold": 0.5
+  }
 }

@@ -16,7 +16,7 @@ DPO fine-tune of [Qwen/Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.
 
 ## Overview
 
-Preference pairs for optimisation come from [pymlex/ai-generated-texts](https://huggingface.co/datasets/pymlex/ai-generated-texts). The corpus is [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es). For each train abstract, two base-model paraphrases are ranked by Oculus logit. DPO with $\beta=0.1$ increases the relative log-probability of the lower-logit completion. Retained pairs: 6396 from 8891 train abstracts with $|z_1-z_2|\ge 1$.
+Preference pairs for optimisation come from [pymlex/ai-generated-texts](https://huggingface.co/datasets/pymlex/ai-generated-texts). The corpus is [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es). For each train abstract, two base-model paraphrases are ranked by Oculus logit. DPO with beta = 0.1 increases the relative log-probability of the lower-logit completion. Retained pairs: 6396 from 8891 train abstracts with absolute logit gap at least 1.
 
 ## Intended use
 
@@ -24,13 +24,16 @@ Research on detector robustness and red-teaming of AI-generated text classifiers
 
 ## Evaluation setup
 
-Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract, scores each output with Oculus, and treats label $1$ as AI-generated at threshold $0.5$ on detector probability.
+Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract, scores each output with Oculus, and treats label 1 as AI-generated at threshold 0.5 on detector probability.
 
 During DPO, mean validation AI probability on a 276-text subset moved from 0.6740 at step 0 to 0.2437 at the last monitor step (-0.4303).
 
 ## Results
 
-_Evaluation metrics pending. Run `python main.py --step evaluate` first._
+| Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| validation | 1107 | 0.2252 | -2.0261 | 0.1752 | 0.0000 | n/a | 0.2982 |
+| test | 1112 | 0.2413 | -1.8549 | 0.1862 | 0.0000 | n/a | 0.3139 |
 
 Lower mean probability and MCC near zero indicate weaker detector response on model paraphrases under the AI-positive labelling convention.
 
@@ -40,7 +43,7 @@ Lower mean probability and MCC near zero indicate weaker detector response on mo
 
 ## Source code
 
-[github.com/pymlex/ai-text-detector-tricking](https://github.com/pymlex/ai-text-detector-tricking)
+The full pipeline is published on [GitHub](https://github.com/pymlex/ai-text-detector-tricking).
 
 ## Citation
 

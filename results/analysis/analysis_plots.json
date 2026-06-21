@@ -1,4 +1,6 @@
 [
   "results/plots/analysis/logit_probe_summary.png",
-  "results/plots/analysis/training_monitor_analysis.png"
+  "results/plots/analysis/training_monitor_analysis.png",
+  "results/plots/analysis/evaluation_summary.png",
+  "results/plots/analysis/score_distributions.png"
 ]
