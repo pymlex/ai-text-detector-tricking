@@ -92,6 +92,13 @@ def save_evaluation_report(report: EvaluationReport, output_dir: Path) -> Path:
 
 def load_preference_dataset(path: Path | None = None) -> Dataset:
     """Load the fixed DPO preference dataset from disk."""
-    default_path = Path("results/preferences/dpo_hf_dataset")
-    dataset_path = path or default_path
+    from utils.paths import PREFERENCES_DIR
+
+    dataset_path = path or (PREFERENCES_DIR / "dpo_hf_dataset")
+    marker = dataset_path / "dataset_info.json"
+    if not marker.exists():
+        raise RuntimeError(
+            f"Preference dataset not found at {dataset_path}. "
+            "Run `python main.py --step preferences` first."
+        )
     return Dataset.load_from_disk(str(dataset_path))
