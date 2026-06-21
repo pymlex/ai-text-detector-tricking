@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizerBase, TrainerCallback, TrainingArguments
 
-from constants import DPO_MONITOR_EVERY_STEPS, TEXT_COLUMN
+from constants import DPO_MONITOR_EVERY_STEPS, DPO_MONITOR_VALID_DIVISOR, TEXT_COLUMN
 from data.prepare import load_filtered_splits
 from detector.scoring import OculusDetector
 from generation.paraphrase import generate_paraphrases
@@ -33,10 +33,15 @@ class DetectorMonitorCallback(TrainerCallback):
         ensure_result_dirs()
         splits = load_filtered_splits()
         validation_texts = splits["validation"][TEXT_COLUMN]
-        if self.monitor_config.validation_sample_size is not None:
-            validation_texts = validation_texts[: self.monitor_config.validation_sample_size]
-        self.validation_texts = validation_texts
+        sample_size = self.monitor_config.validation_sample_size
+        if sample_size is None:
+            sample_size = max(1, len(validation_texts) // DPO_MONITOR_VALID_DIVISOR)
+        self.validation_texts = validation_texts[:sample_size]
         self.detector = OculusDetector(device=device)
+        print(
+            f"Monitor validation subset: {len(self.validation_texts)} / {len(validation_texts)} texts",
+            flush=True,
+        )
 
     def _should_evaluate(self, step: int) -> bool:
         if step == 0:

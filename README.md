@@ -14,7 +14,7 @@ $$
 \mathcal{L}_{\mathrm{DPO}}(\theta) = -\mathbb{E}\left[\log \sigma\left(\beta\left[\log \frac{\pi_\theta(y_w \mid x)}{\pi_{\mathrm{ref}}(y_w \mid x)} - \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\mathrm{ref}}(y_l \mid x)}\right]\right)\right]
 $$
 
-with $\beta = 0.1$, learning rate $10^{-5}$, cosine schedule, warmup ratio $0.1$, bf16 on GPU, two epochs, effective batch size $32$.
+with $\beta = 0.1$, learning rate $10^{-5}$, cosine schedule, warmup ratio $0.1$, bf16 on GPU, four epochs, effective batch size $32$.
 
 Post-training evaluation generates one paraphrase per validation and test abstract with the fine-tuned model, scores each output with Oculus, and treats label $1$ as AI-generated. Metrics at threshold $0.5$: Accuracy, Precision, Recall, F1, MCC, ROC-AUC, mean logit.
 
@@ -165,7 +165,8 @@ bash scripts/run_all.sh
 | `PREFERENCE_LOGIT_MARGIN` | `1` | Minimum $|z_1 - z_2|$ for DPO pairs |
 | `GENERATION_BATCH_SIZE` | `128` | Paraphrase mini-batch on GPU |
 | `ANALYZE_MARGIN_SAMPLES` | `512` | Probe size for logit-gap histogram |
-| `DPO_EPOCHS` | `2` | Training epochs |
+| `DPO_EPOCHS` | `4` | Training epochs |
+| `DPO_MONITOR_VALID_DIVISOR` | `4` | Validation monitor uses 1/N of the validation split |
 | `DPO_PER_DEVICE_BATCH_SIZE` | `32` | Mini-batch size |
 | `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
 | `DPO_LEARNING_RATE` | `1e-5` | Adam learning rate |
