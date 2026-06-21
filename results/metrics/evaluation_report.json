@@ -2,26 +2,26 @@
   "validation": {
     "split": "validation",
     "n_samples": 1107,
-    "accuracy": 0.17524841915085818,
+    "accuracy": 0.17163504968383017,
     "precision": 1.0,
-    "recall": 0.17524841915085818,
-    "f1": 0.2982321291314374,
+    "recall": 0.17163504968383017,
+    "f1": 0.29298380878951424,
     "mcc": 0.0,
     "roc_auc": null,
-    "mean_logit": -2.026107011412547,
-    "mean_probability": 0.22517526002730043
+    "mean_logit": -2.0099520581162786,
+    "mean_probability": 0.2263815667345318
   },
   "test": {
     "split": "test",
     "n_samples": 1112,
-    "accuracy": 0.18615107913669066,
+    "accuracy": 0.18345323741007194,
     "precision": 1.0,
-    "recall": 0.18615107913669066,
-    "f1": 0.31387414708112205,
+    "recall": 0.18345323741007194,
+    "f1": 0.3100303951367781,
     "mcc": 0.0,
     "roc_auc": null,
-    "mean_logit": -1.854886487703402,
-    "mean_probability": 0.24130486895322117
+    "mean_logit": -1.8733430301172578,
+    "mean_probability": 0.23908082744766893
   },
   "threshold": 0.5
 }

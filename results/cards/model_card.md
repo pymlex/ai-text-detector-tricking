@@ -24,20 +24,24 @@ Research on detector robustness and red-teaming of AI-generated text classifiers
 
 ## Evaluation setup
 
-Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract, scores each output with Oculus, and treats label 1 as AI-generated at threshold 0.5 on detector probability.
+Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract with the base and fine-tuned models, scores each output with Oculus, and treats label 1 as AI-generated at threshold 0.5 on detector probability.
 
 During DPO, mean validation AI probability on a 276-text subset moved from 0.6740 at step 0 to 0.2437 at the last monitor step (-0.4303).
 
 ## Results
 
-| Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| validation | 1107 | 0.2252 | -2.0261 | 0.1752 | 0.0000 | n/a | 0.2982 |
-| test | 1112 | 0.2413 | -1.8549 | 0.1862 | 0.0000 | n/a | 0.3139 |
+| Model | Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.0000 | n/a | 0.8032 |
+| base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.0000 | n/a | 0.7991 |
+| fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.0000 | n/a | 0.2930 |
+| fine-tuned | test | 1112 | 0.2391 | -1.8733 | 0.1835 | 0.0000 | n/a | 0.3100 |
 
 Lower mean probability and MCC near zero indicate weaker detector response on model paraphrases under the AI-positive labelling convention.
 
 ![Evaluation summary](https://huggingface.co/pymlex/Qwen2.5-0.5B-Human/resolve/main/assets/evaluation_summary.png)
+
+![Score distributions](https://huggingface.co/pymlex/Qwen2.5-0.5B-Human/resolve/main/assets/score_distributions.png)
 
 ![Training monitor](https://huggingface.co/pymlex/Qwen2.5-0.5B-Human/resolve/main/assets/training_monitor_analysis.png)
 

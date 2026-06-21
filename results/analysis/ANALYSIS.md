@@ -18,14 +18,16 @@ Final logged DPO loss: 0.2556.
 
 ![Training monitor analysis](../plots/analysis/training_monitor_analysis.png)
 
-## Final evaluation
+## Evaluation
 
-Paraphrases from the fine-tuned model are scored by Oculus. Ground-truth label is AI-generated. Threshold on detector probability: 0.5.
+Paraphrases from the base and fine-tuned models are scored by Oculus. Ground-truth label is AI-generated. Threshold on detector probability: 0.5.
 
-| Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| validation | 1107 | 0.2252 | -2.0261 | 0.1752 | 0.0000 | n/a | 0.2982 |
-| test | 1112 | 0.2413 | -1.8549 | 0.1862 | 0.0000 | n/a | 0.3139 |
+| Model | Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.0000 | n/a | 0.8032 |
+| base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.0000 | n/a | 0.7991 |
+| fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.0000 | n/a | 0.2930 |
+| fine-tuned | test | 1112 | 0.2391 | -1.8733 | 0.1835 | 0.0000 | n/a | 0.3100 |
 
 Lower mean probability and MCC near zero indicate weaker detector response on model paraphrases under the AI-positive labelling convention.
 
