@@ -21,31 +21,30 @@ Post-training evaluation generates one paraphrase per validation and test abstra
 ## Architecture
 
 ```mermaid
-%%{init: {"theme": "neutral", "themeVariables": {"fontSize": "11px", "classFontSize": "11px"}}}%%
 flowchart TB
-    subgraph data["Data"]
-        HF[Flaglab abstracts]
-        Filter[Token filter L le 512]
-        Splits[train validation test]
-    end
-    subgraph prefs["Preference build"]
-        GenBase[Base Qwen paraphrase x2]
-        Det1[Oculus scoring]
-        Pairs[chosen rejected pairs]
-    end
-    subgraph train["DPO"]
-        DPOTrainer[trl DPOTrainer]
-        Mon[Validation monitor every 0.1 epoch]
-    end
-    subgraph eval["Evaluation"]
-        GenFT[Fine-tuned paraphrase]
-        Det2[Oculus scoring]
-        Metrics[CSV metrics confusion matrix histograms]
-    end
-    HF --> Filter --> Splits
-    Splits --> GenBase --> Det1 --> Pairs --> DPOTrainer
-    DPOTrainer --> Mon
-    DPOTrainer --> GenFT --> Det2 --> Metrics
+  subgraph data [Data]
+    HF[Flaglab abstracts]
+    Filter[Token filter L le 512]
+    Splits[train validation test]
+  end
+  subgraph prefs [Preference build]
+    GenBase[Base Qwen paraphrase x2]
+    Det1[Oculus scoring]
+    Pairs[chosen rejected pairs]
+  end
+  subgraph train [DPO]
+    DPOTrainer[trl DPOTrainer]
+    Mon[Validation monitor every 0.1 epoch]
+  end
+  subgraph eval [Evaluation]
+    GenFT[Fine-tuned paraphrase]
+    Det2[Oculus scoring]
+    Metrics[CSV metrics confusion matrix histograms]
+  end
+  HF --> Filter --> Splits
+  Splits --> GenBase --> Det1 --> Pairs --> DPOTrainer
+  DPOTrainer --> Mon
+  DPOTrainer --> GenFT --> Det2 --> Metrics
 ```
 
 ## Project tree
