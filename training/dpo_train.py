@@ -20,7 +20,9 @@ from constants import (
     MODEL_ID,
 )
 from evaluation.metrics import load_preference_dataset
+from plotting.figures import plot_training_summary
 from training.callbacks import DetectorMonitorCallback
+from training.history import save_training_history
 from training.log_callbacks import CompactDPOLogCallback
 from utils.paths import CHECKPOINTS_DIR, ensure_result_dirs
 
@@ -92,6 +94,7 @@ def train_dpo(device: torch.device | None = None) -> Path:
         report_to="none",
         max_length=512,
         log_level="error",
+        disable_tqdm=False,
     )
 
     monitor_callback = DetectorMonitorCallback(tokenizer=tokenizer, device=device)
@@ -114,6 +117,10 @@ def train_dpo(device: torch.device | None = None) -> Path:
         flush=True,
     )
     trainer.train()
+
+    save_training_history(trainer, monitor_callback.validation_history)
+    summary_path = plot_training_summary()
+    print(f"Saved training summary plot: {summary_path}", flush=True)
 
     final_dir = CHECKPOINTS_DIR / "final"
     trainer.save_model(str(final_dir))

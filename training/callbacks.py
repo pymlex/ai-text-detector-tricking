@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 
 import numpy as np
@@ -11,7 +10,7 @@ from constants import DPO_MONITOR_EVERY_STEPS, TEXT_COLUMN
 from data.prepare import load_filtered_splits
 from detector.scoring import OculusDetector
 from generation.paraphrase import generate_paraphrases
-from utils.paths import MONITORING_DIR, ensure_result_dirs
+from utils.paths import ensure_result_dirs
 
 
 @dataclass
@@ -30,6 +29,7 @@ class DetectorMonitorCallback(TrainerCallback):
         self.tokenizer = tokenizer
         self.device = device
         self.monitor_config = monitor_config or MonitorConfig()
+        self.validation_history: list[dict] = []
         ensure_result_dirs()
         splits = load_filtered_splits()
         validation_texts = splits["validation"][TEXT_COLUMN]
@@ -54,13 +54,9 @@ class DetectorMonitorCallback(TrainerCallback):
                 original_texts=self.validation_texts,
                 device=self.device,
                 num_samples=1,
-                show_progress=False,
             )
         ]
-        logits = np.array(
-            self.detector.batch_logits(paraphrases, show_progress=False),
-            dtype=np.float64,
-        )
+        logits = np.array(self.detector.batch_logits(paraphrases), dtype=np.float64)
         probabilities = 1.0 / (1.0 + np.exp(-logits))
         payload = {
             "step": int(step),
@@ -69,8 +65,7 @@ class DetectorMonitorCallback(TrainerCallback):
             "mean_probability": float(probabilities.mean()),
             "n_samples": int(len(probabilities)),
         }
-        output_path = MONITORING_DIR / f"monitor_step_{step:06d}.json"
-        output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        self.validation_history.append(payload)
         print(
             f"[valid] step={step:4d} | epoch={epoch:5.3f} | "
             f"mean_logit={payload['mean_logit']:.4f} | "
