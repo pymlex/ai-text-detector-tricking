@@ -56,11 +56,15 @@ def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
                 "",
             ]
         )
-    if monitor.final_loss is not None:
-        lines.append(
-            f"Final logged DPO loss: {monitor.final_loss:.4f}. "
-            f"Final reward accuracy: {monitor.final_reward_accuracy:.4f}."
-        )
+    if monitor.final_loss is not None or monitor.final_reward_accuracy is not None:
+        monitor_parts = []
+        if monitor.final_loss is not None:
+            monitor_parts.append(f"Final logged DPO loss: {monitor.final_loss:.4f}.")
+        if monitor.final_reward_accuracy is not None:
+            monitor_parts.append(
+                f"Final reward accuracy: {monitor.final_reward_accuracy:.4f}."
+            )
+        lines.append(" ".join(monitor_parts))
         lines.append("")
         lines.append("![Training monitor analysis](../plots/analysis/training_monitor_analysis.png)")
         lines.append("")

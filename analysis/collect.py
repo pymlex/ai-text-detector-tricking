@@ -106,8 +106,10 @@ def _load_training_monitor_stats() -> TrainingMonitorStats:
         train_plot = train_frame.dropna(subset=["loss"])
         if not train_plot.empty:
             final_loss = float(train_plot.iloc[-1]["loss"])
-            if "rewards/accuracies" in train_plot.columns:
-                final_reward_accuracy = float(train_plot.iloc[-1]["rewards/accuracies"])
+        if "rewards/accuracies" in train_frame.columns:
+            reward_plot = train_frame.dropna(subset=["rewards/accuracies"])
+            if not reward_plot.empty:
+                final_reward_accuracy = float(reward_plot.iloc[-1]["rewards/accuracies"])
 
     return TrainingMonitorStats(
         n_monitor_samples=n_monitor,
