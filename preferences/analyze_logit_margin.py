@@ -8,7 +8,7 @@ import pandas as pd
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from constants import ANALYZE_MARGIN_SAMPLES, MODEL_ID, PARAPHRASES_PER_TEXT, TEXT_COLUMN
+from constants import ANALYZE_MARGIN_SAMPLES, GENERATION_BATCH_SIZE, MODEL_ID, PARAPHRASES_PER_TEXT, TEXT_COLUMN
 from data.prepare import load_filtered_splits
 from detector.scoring import OculusDetector
 from generation.paraphrase import generate_paraphrases
@@ -22,6 +22,7 @@ def analyze_logit_margin(
 ) -> Path:
     """Generate paraphrase pairs for ``n_samples`` texts and plot logit gap histogram."""
     ensure_result_dirs()
+    print(f"Probe samples: {n_samples}, generation batch size: {GENERATION_BATCH_SIZE}")
     splits = load_filtered_splits()
     sample_texts = splits["train"][TEXT_COLUMN][:n_samples]
 

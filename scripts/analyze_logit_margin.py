@@ -8,11 +8,9 @@ import torch
 
 from constants import ANALYZE_MARGIN_SAMPLES
 from preferences.analyze_logit_margin import analyze_logit_margin
-from utils.config_loader import load_env_file
 
 
 def main() -> None:
-    load_env_file("project")
     parser = argparse.ArgumentParser()
     parser.add_argument("--n", type=int, default=ANALYZE_MARGIN_SAMPLES)
     args = parser.parse_args()

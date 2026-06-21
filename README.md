@@ -122,7 +122,7 @@ Set `HF_TOKEN` in `.env`. Optional: `GITHUB_NAME`, `GITHUB_EMAIL`, batch sizes, 
 
 ```bash
 python main.py --step prepare
-python scripts/analyze_logit_margin.py --n 100
+python scripts/analyze_logit_margin.py
 python main.py --step preferences
 python main.py --step train
 python main.py --step evaluate
@@ -163,7 +163,8 @@ bash scripts/run_all.sh
 | `MAX_TOKENS` | `512` | Filter and generation budget |
 | `GENERATION_TEMPERATURE` | `0.7` | Paraphrase sampling temperature |
 | `PREFERENCE_LOGIT_MARGIN` | `0.01` | Minimum $|z_1 - z_2|$ for DPO pairs |
-| `ANALYZE_MARGIN_SAMPLES` | `100` | Probe size for logit-gap histogram |
+| `GENERATION_BATCH_SIZE` | `128` | Paraphrase mini-batch on GPU |
+| `ANALYZE_MARGIN_SAMPLES` | `128` | Probe size for logit-gap histogram |
 | `DPO_EPOCHS` | `2` | Training epochs |
 | `DPO_PER_DEVICE_BATCH_SIZE` | `32` | Mini-batch size |
 | `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
