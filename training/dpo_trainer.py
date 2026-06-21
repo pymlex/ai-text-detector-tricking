@@ -11,6 +11,6 @@ class QuietDPOTrainer(DPOTrainer):
         for callback in self.callback_handler.callbacks:
             if callback.__class__.__name__ == "PrinterCallback":
                 continue
-            control = callback.on_log(self.args, self.state, self.control, logs)
+            control = callback.on_log(self.args, self.state, self.control, logs=logs)
             if control is not None:
                 self.control = control
