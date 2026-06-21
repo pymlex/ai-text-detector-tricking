@@ -10,6 +10,7 @@ from constants import DPO_MONITOR_EVERY_STEPS, DPO_MONITOR_VALID_DIVISOR, TEXT_C
 from data.prepare import load_filtered_splits
 from detector.scoring import OculusDetector
 from generation.paraphrase import generate_paraphrases
+from training.log_callbacks import log_line
 from utils.paths import ensure_result_dirs
 
 
@@ -38,9 +39,8 @@ class DetectorMonitorCallback(TrainerCallback):
             sample_size = max(1, len(validation_texts) // DPO_MONITOR_VALID_DIVISOR)
         self.validation_texts = validation_texts[:sample_size]
         self.detector = OculusDetector(device=device)
-        print(
-            f"Monitor validation subset: {len(self.validation_texts)} / {len(validation_texts)} texts",
-            flush=True,
+        log_line(
+            f"Monitor validation subset: {len(self.validation_texts)} / {len(validation_texts)} texts"
         )
 
     def _should_evaluate(self, step: int) -> bool:
@@ -71,12 +71,11 @@ class DetectorMonitorCallback(TrainerCallback):
             "n_samples": int(len(probabilities)),
         }
         self.validation_history.append(payload)
-        print(
+        log_line(
             f"[valid] step={step:4d} | epoch={epoch:5.3f} | "
             f"mean_logit={payload['mean_logit']:.4f} | "
             f"mean_prob={payload['mean_probability']:.4f} | "
-            f"n={payload['n_samples']}",
-            flush=True,
+            f"n={payload['n_samples']}"
         )
         model.train()
 

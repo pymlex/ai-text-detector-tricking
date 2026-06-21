@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+from tqdm.auto import tqdm
 from transformers import TrainerCallback, TrainingArguments
+
+
+def log_line(message: str) -> None:
+    """Print one log line without breaking active tqdm bars."""
+    tqdm.write(message)
 
 
 class CompactDPOLogCallback(TrainerCallback):
@@ -22,5 +28,18 @@ class CompactDPOLogCallback(TrainerCallback):
             line += f" | reward_margin={float(logs['rewards/margins']):.4f}"
         if "learning_rate" in logs:
             line += f" | lr={float(logs['learning_rate']):.2e}"
-        print(line, flush=True)
+        log_line(line)
+        return control
+
+
+class SuppressPrinterCallback(TrainerCallback):
+    def on_train_begin(self, args: TrainingArguments, state, control, **kwargs):
+        trainer = getattr(self, "trainer", None)
+        if trainer is None:
+            return control
+        trainer.callback_handler.callbacks = [
+            callback
+            for callback in trainer.callback_handler.callbacks
+            if callback.__class__.__name__ != "PrinterCallback"
+        ]
         return control

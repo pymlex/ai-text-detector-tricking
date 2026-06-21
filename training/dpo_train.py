@@ -4,8 +4,8 @@ from pathlib import Path
 
 import torch
 from datasets import Dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, PrinterCallback
-from trl import DPOConfig, DPOTrainer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import DPOConfig
 
 from constants import (
     CHECKPOINT_FRACTION,
@@ -22,8 +22,9 @@ from constants import (
 from evaluation.metrics import load_preference_dataset
 from plotting.figures import plot_training_summary
 from training.callbacks import DetectorMonitorCallback
+from training.dpo_trainer import QuietDPOTrainer
 from training.history import save_training_history
-from training.log_callbacks import CompactDPOLogCallback
+from training.log_callbacks import CompactDPOLogCallback, SuppressPrinterCallback, log_line
 from utils.paths import CHECKPOINTS_DIR, ensure_result_dirs
 
 
@@ -37,12 +38,6 @@ def _format_preference_dataset(dataset: Dataset) -> Dataset:
         }
 
     return dataset.map(_map_row)
-
-
-def _strip_default_log_callbacks(trainer: DPOTrainer) -> None:
-    for callback in list(trainer.callback_handler.callbacks):
-        if isinstance(callback, PrinterCallback):
-            trainer.remove_callback(callback)
 
 
 def train_dpo(device: torch.device | None = None) -> Path:
@@ -99,31 +94,29 @@ def train_dpo(device: torch.device | None = None) -> Path:
 
     monitor_callback = DetectorMonitorCallback(tokenizer=tokenizer, device=device)
     compact_log_callback = CompactDPOLogCallback()
+    suppress_printer_callback = SuppressPrinterCallback()
 
-    trainer = DPOTrainer(
+    trainer = QuietDPOTrainer(
         model=model,
         ref_model=None,
         args=training_args,
         train_dataset=train_dataset,
         processing_class=tokenizer,
-        callbacks=[monitor_callback],
+        callbacks=[suppress_printer_callback, monitor_callback, compact_log_callback],
     )
-    _strip_default_log_callbacks(trainer)
-    trainer.add_callback(compact_log_callback)
 
-    print(
+    log_line(
         f"DPO train | pairs={len(train_dataset)} | steps/epoch={steps_per_epoch} | "
-        f"total_steps={total_steps} | log/monitor every {DPO_MONITOR_EVERY_STEPS} steps",
-        flush=True,
+        f"total_steps={total_steps} | log/monitor every {DPO_MONITOR_EVERY_STEPS} steps"
     )
     trainer.train()
 
     save_training_history(trainer, monitor_callback.validation_history)
     summary_path = plot_training_summary()
-    print(f"Saved training summary plot: {summary_path}", flush=True)
+    log_line(f"Saved training summary plot: {summary_path}")
 
     final_dir = CHECKPOINTS_DIR / "final"
     trainer.save_model(str(final_dir))
     tokenizer.save_pretrained(str(final_dir))
-    print(f"Saved final model: {final_dir}")
+    log_line(f"Saved final model: {final_dir}")
     return final_dir
