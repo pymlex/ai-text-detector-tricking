@@ -53,17 +53,13 @@ def _plot_confusion_matrix(split: str, matrix_path: Path, output_dir: Path) -> P
     return path
 
 
-def evaluate_model(
-    model_path: str | Path,
-    device: torch.device | None = None,
-    output_tag: str = "final",
-) -> Path:
-    """Generate paraphrases on validation and test, then score with Oculus."""
-    ensure_result_dirs()
-    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_path = str(model_path)
-
-    splits = load_filtered_splits()
+def _collect_split_scores(
+    model_path: str,
+    output_tag: str,
+    splits: dict,
+    detector: OculusDetector,
+    device: torch.device,
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray]]:
     tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
@@ -74,7 +70,6 @@ def evaluate_model(
         model = model.to(device)
     model.eval()
 
-    detector = OculusDetector(device=device)
     split_probs: dict[str, np.ndarray] = {}
     split_logits: dict[str, np.ndarray] = {}
 
@@ -105,7 +100,37 @@ def evaluate_model(
         )
         csv_path = METRICS_DIR / f"{output_tag}_{split_name}_scores.csv"
         frame.to_csv(csv_path, index=False)
-        _plot_probability_hist(split_name, probabilities, PLOTS_DIR)
+
+    del model
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+    return split_probs, split_logits
+
+
+def evaluate_model(
+    model_path: str | Path,
+    device: torch.device | None = None,
+    output_tag: str = "final",
+) -> Path:
+    """Generate paraphrases on validation and test, then score with Oculus."""
+    ensure_result_dirs()
+    device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_path = str(model_path)
+
+    splits = load_filtered_splits()
+    detector = OculusDetector(device=device)
+
+    split_probs, split_logits = _collect_split_scores(
+        model_path,
+        output_tag,
+        splits,
+        detector,
+        device,
+    )
+
+    for split_name in ("validation", "test"):
+        _plot_probability_hist(split_name, split_probs[split_name], PLOTS_DIR)
 
     report = build_evaluation_report(
         split_probs["validation"],
@@ -124,6 +149,24 @@ def evaluate_model(
         )
         _plot_confusion_matrix(split_name, matrix_csv, PLOTS_DIR)
 
+    base_probs, base_logits = _collect_split_scores(
+        MODEL_ID,
+        "base",
+        splits,
+        detector,
+        device,
+    )
+    base_report = build_evaluation_report(
+        base_probs["validation"],
+        base_logits["validation"],
+        base_probs["test"],
+        base_logits["test"],
+        DETECTION_THRESHOLD,
+    )
+    base_report_path = METRICS_DIR / "base_evaluation_report.json"
+    base_report_path.write_text(base_report.model_dump_json(indent=2), encoding="utf-8")
+
     print(report.model_dump_json(indent=2))
     print(f"Saved evaluation report: {report_path}")
+    print(f"Saved base evaluation report: {base_report_path}")
     return report_path
