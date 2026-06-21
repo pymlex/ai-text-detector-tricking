@@ -58,6 +58,8 @@ def analyze_logit_margin(
 
     rows: list[dict] = []
     abs_logit_gaps: list[float] = []
+    chosen_logits: list[float] = []
+    rejected_logits: list[float] = []
     for row_idx, (original_text, paraphrases) in enumerate(
         zip(sample_texts, paraphrase_groups, strict=True)
     ):
@@ -65,6 +67,12 @@ def analyze_logit_margin(
         row_probs = prob_array[row_idx].tolist()
         abs_gap = logit_abs_margin(row_logits)
         abs_logit_gaps.append(abs_gap)
+        if row_logits[0] <= row_logits[1]:
+            chosen_logit, rejected_logit = row_logits[0], row_logits[1]
+        else:
+            chosen_logit, rejected_logit = row_logits[1], row_logits[0]
+        chosen_logits.append(chosen_logit)
+        rejected_logits.append(rejected_logit)
         rows.append(
             {
                 "original_text": original_text,
@@ -72,6 +80,8 @@ def analyze_logit_margin(
                 "paraphrase_1": paraphrases[1],
                 "logit_0": row_logits[0],
                 "logit_1": row_logits[1],
+                "chosen_logit": chosen_logit,
+                "rejected_logit": rejected_logit,
                 "abs_logit_diff": abs_gap,
                 "prob_0": row_probs[0],
                 "prob_1": row_probs[1],
@@ -98,6 +108,27 @@ def analyze_logit_margin(
     fig.savefig(plot_path, dpi=150)
     plt.close(fig)
 
+    chosen_array = np.array(chosen_logits, dtype=np.float64)
+    rejected_array = np.array(rejected_logits, dtype=np.float64)
+    bin_edges = np.linspace(
+        min(chosen_array.min(), rejected_array.min()),
+        max(chosen_array.max(), rejected_array.max()),
+        41,
+    )
+    fig, axis = plt.subplots(figsize=(10, 5))
+    axis.hist(chosen_array, bins=bin_edges, alpha=0.6, label="chosen")
+    axis.hist(rejected_array, bins=bin_edges, alpha=0.6, label="rejected")
+    axis.set_title(f"Chosen vs rejected logit distributions, n={n_samples}")
+    axis.set_xlabel("Detector logit")
+    axis.set_ylabel("Count")
+    axis.legend()
+    axis.grid(alpha=0.5)
+    fig.tight_layout()
+    subset_plot_path = PLOTS_DIR / "logit_chosen_rejected_hist.png"
+    fig.savefig(subset_plot_path, dpi=150)
+    plt.close(fig)
+
     print(f"Saved CSV: {csv_path}")
     print(f"Saved plot: {plot_path}")
+    print(f"Saved plot: {subset_plot_path}")
     return plot_path

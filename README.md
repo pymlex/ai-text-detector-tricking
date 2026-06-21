@@ -129,7 +129,7 @@ python main.py --step evaluate
 python main.py --step plot
 ```
 
-Probe outputs: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before building preferences.
+Probe outputs: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`, `results/plots/logit_chosen_rejected_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before building preferences.
 
 Or the full automated run with GitHub device login, Hugging Face uploads, and results push:
 
