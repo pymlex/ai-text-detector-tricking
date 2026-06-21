@@ -83,7 +83,6 @@ def train_dpo(device: torch.device | None = None) -> Path:
         remove_unused_columns=False,
         report_to="none",
         max_length=512,
-        max_prompt_length=512,
     )
 
     monitor_callback = DetectorMonitorCallback(
