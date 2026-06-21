@@ -16,7 +16,7 @@ Preference pairs for DPO fine-tuning of `Qwen/Qwen2.5-0.5B-Instruct` against the
 
 ## Dataset construction
 
-For each abstract in the train split of [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), two paraphrases are sampled from the base instruct model with temperature $0.7$. Each paraphrase is scored by [danibor/oculus-v2.0-multilingual](https://huggingface.co/danibor/oculus-v2.0-multilingual). The lower AI probability becomes `chosen`, the higher becomes `rejected`. Pairs with probability margin below $0.05$ are discarded.
+For each abstract in the train split of [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), two paraphrases are sampled from the base instruct model with temperature $0.7$. Each paraphrase is scored by [danibor/oculus-v2.0-multilingual](https://huggingface.co/danibor/oculus-v2.0-multilingual). The lower detector logit becomes `chosen`, the higher becomes `rejected`. Pairs with $|z_1 - z_2|$ below `PREFERENCE_LOGIT_MARGIN` are discarded.
 
 ## Fields
 

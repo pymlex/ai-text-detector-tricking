@@ -8,47 +8,14 @@ import torch
 from datasets import Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from constants import (
-    MODEL_ID,
-    PARAPHRASES_PER_TEXT,
-    PREFERENCE_PROB_MARGIN,
-    TEXT_COLUMN,
-)
+from constants import MODEL_ID, PARAPHRASES_PER_TEXT, TEXT_COLUMN
 from data.prepare import load_filtered_splits
 from detector.scoring import OculusDetector
 from generation.paraphrase import generate_paraphrases
 from generation.prompts import build_paraphrase_prompt
+from preferences.pairing import select_preference_pair
 from schemas.preferences import PreferenceBuildStats, PreferencePair
 from utils.paths import PREFERENCES_DIR, ensure_result_dirs
-
-
-def _select_pair(
-    original_text: str,
-    prompt: str,
-    paraphrases: list[str],
-    logits: list[float],
-    probabilities: list[float],
-) -> PreferencePair | None:
-    if len(paraphrases) < 2:
-        return None
-    if not paraphrases[0].strip() or not paraphrases[1].strip():
-        return None
-    if abs(probabilities[0] - probabilities[1]) < PREFERENCE_PROB_MARGIN:
-        return None
-    if probabilities[0] <= probabilities[1]:
-        chosen_idx, rejected_idx = 0, 1
-    else:
-        chosen_idx, rejected_idx = 1, 0
-    return PreferencePair(
-        prompt=prompt,
-        chosen=paraphrases[chosen_idx],
-        rejected=paraphrases[rejected_idx],
-        chosen_logit=logits[chosen_idx],
-        rejected_logit=logits[rejected_idx],
-        chosen_probability=probabilities[chosen_idx],
-        rejected_probability=probabilities[rejected_idx],
-        original_text=original_text,
-    )
 
 
 PARAPHRASE_CACHE_PATH = PREFERENCES_DIR / "paraphrase_cache.jsonl"
@@ -120,7 +87,6 @@ def build_preference_dataset(device: torch.device | None = None) -> Path:
     flat_paraphrases = [item for group in paraphrase_groups for item in group]
     detector = OculusDetector(device=device)
     flat_logits = detector.batch_logits(flat_paraphrases)
-    flat_probs = torch.sigmoid(torch.tensor(flat_logits, dtype=torch.float32)).numpy().tolist()
 
     pairs: list[PreferencePair] = []
     skipped_tie = 0
@@ -129,9 +95,8 @@ def build_preference_dataset(device: torch.device | None = None) -> Path:
     for original_text, paraphrases in zip(train_texts, paraphrase_groups, strict=True):
         prompt = build_paraphrase_prompt(original_text)
         chunk_logits = flat_logits[cursor : cursor + PARAPHRASES_PER_TEXT]
-        chunk_probs = flat_probs[cursor : cursor + PARAPHRASES_PER_TEXT]
         cursor += PARAPHRASES_PER_TEXT
-        pair = _select_pair(original_text, prompt, paraphrases, chunk_logits, chunk_probs)
+        pair = select_preference_pair(original_text, prompt, paraphrases, chunk_logits)
         if pair is None:
             if not paraphrases[0].strip() or not paraphrases[1].strip():
                 skipped_empty += 1

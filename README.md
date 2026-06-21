@@ -6,7 +6,7 @@ DPO fine-tuning of [Qwen/Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen
 
 Source corpus: [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), field `resumen`. After token-length filtering with the Qwen tokenizer at $L \le 512$, the retained split sizes are train $8891$, validation $1107$, test $1112$.
 
-For each train abstract, the base instruct model samples two paraphrases at temperature $0.7$. Oculus scores each paraphrase with sigmoid probability $p \in [0,1]$ for the AI class. The lower-scoring paraphrase becomes `chosen`, the higher becomes `rejected`. Pairs with $|p_1 - p_2| < 0.05$ are discarded.
+For each train abstract, the base instruct model samples two paraphrases at temperature $0.7$. Oculus returns logit $z$ per paraphrase. The lower logit becomes `chosen`, the higher becomes `rejected`. Pairs with $|z_1 - z_2| < \tau$ are discarded, where $\tau$ is `PREFERENCE_LOGIT_MARGIN`. Run `python scripts/analyze_logit_margin.py` on 100 probe pairs to calibrate $\tau$ from the logit-gap histogram.
 
 DPO maximises the margin between chosen and rejected completions relative to a frozen reference policy:
 
@@ -122,11 +122,14 @@ Set `HF_TOKEN` in `.env`. Optional: `GITHUB_NAME`, `GITHUB_EMAIL`, batch sizes, 
 
 ```bash
 python main.py --step prepare
+python scripts/analyze_logit_margin.py --n 100
 python main.py --step preferences
 python main.py --step train
 python main.py --step evaluate
 python main.py --step plot
 ```
+
+Probe outputs: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before building preferences.
 
 Or the full automated run with GitHub device login, Hugging Face uploads, and results push:
 
@@ -159,7 +162,8 @@ bash scripts/run_all.sh
 | `DATASET_ID` | `Flaglab/academic-knowledge-abstracts-es` | Source abstracts |
 | `MAX_TOKENS` | `512` | Filter and generation budget |
 | `GENERATION_TEMPERATURE` | `0.7` | Paraphrase sampling temperature |
-| `PREFERENCE_PROB_MARGIN` | `0.05` | Minimum probability gap for DPO pairs |
+| `PREFERENCE_LOGIT_MARGIN` | `0.01` | Minimum $|z_1 - z_2|$ for DPO pairs |
+| `ANALYZE_MARGIN_SAMPLES` | `100` | Probe size for logit-gap histogram |
 | `DPO_EPOCHS` | `2` | Training epochs |
 | `DPO_PER_DEVICE_BATCH_SIZE` | `32` | Mini-batch size |
 | `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
