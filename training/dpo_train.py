@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch
 from datasets import Dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, PrinterCallback
 from trl import DPOConfig, DPOTrainer
 
 from constants import (
@@ -14,13 +14,14 @@ from constants import (
     DPO_GRADIENT_ACCUMULATION_STEPS,
     DPO_LEARNING_RATE,
     DPO_LOGGING_STEPS,
+    DPO_MONITOR_EVERY_STEPS,
     DPO_PER_DEVICE_BATCH_SIZE,
     DPO_WARMUP_RATIO,
     MODEL_ID,
-    MONITORING_FRACTION,
 )
 from evaluation.metrics import load_preference_dataset
-from training.callbacks import DetectorMonitorCallback, MonitorConfig
+from training.callbacks import DetectorMonitorCallback
+from training.log_callbacks import CompactDPOLogCallback
 from utils.paths import CHECKPOINTS_DIR, ensure_result_dirs
 
 
@@ -34,6 +35,12 @@ def _format_preference_dataset(dataset: Dataset) -> Dataset:
         }
 
     return dataset.map(_map_row)
+
+
+def _strip_default_log_callbacks(trainer: DPOTrainer) -> None:
+    for callback in list(trainer.callback_handler.callbacks):
+        if isinstance(callback, PrinterCallback):
+            trainer.remove_callback(callback)
 
 
 def train_dpo(device: torch.device | None = None) -> Path:
@@ -62,8 +69,9 @@ def train_dpo(device: torch.device | None = None) -> Path:
         len(train_dataset)
         // (DPO_PER_DEVICE_BATCH_SIZE * DPO_GRADIENT_ACCUMULATION_STEPS),
     )
+    total_steps = steps_per_epoch * DPO_EPOCHS
     save_steps = max(1, int(steps_per_epoch * CHECKPOINT_FRACTION))
-    monitor_steps = max(1, int(steps_per_epoch * MONITORING_FRACTION))
+    warmup_steps = max(1, int(total_steps * DPO_WARMUP_RATIO))
 
     training_args = DPOConfig(
         output_dir=str(CHECKPOINTS_DIR),
@@ -75,7 +83,7 @@ def train_dpo(device: torch.device | None = None) -> Path:
         bf16=device.type == "cuda",
         fp16=False,
         lr_scheduler_type="cosine",
-        warmup_ratio=DPO_WARMUP_RATIO,
+        warmup_steps=warmup_steps,
         logging_steps=DPO_LOGGING_STEPS,
         save_strategy="steps",
         save_steps=save_steps,
@@ -83,13 +91,11 @@ def train_dpo(device: torch.device | None = None) -> Path:
         remove_unused_columns=False,
         report_to="none",
         max_length=512,
+        log_level="error",
     )
 
-    monitor_callback = DetectorMonitorCallback(
-        tokenizer=tokenizer,
-        device=device,
-        monitor_config=MonitorConfig(eval_every_steps=monitor_steps),
-    )
+    monitor_callback = DetectorMonitorCallback(tokenizer=tokenizer, device=device)
+    compact_log_callback = CompactDPOLogCallback()
 
     trainer = DPOTrainer(
         model=model,
@@ -98,6 +104,14 @@ def train_dpo(device: torch.device | None = None) -> Path:
         train_dataset=train_dataset,
         processing_class=tokenizer,
         callbacks=[monitor_callback],
+    )
+    _strip_default_log_callbacks(trainer)
+    trainer.add_callback(compact_log_callback)
+
+    print(
+        f"DPO train | pairs={len(train_dataset)} | steps/epoch={steps_per_epoch} | "
+        f"total_steps={total_steps} | log/monitor every {DPO_MONITOR_EVERY_STEPS} steps",
+        flush=True,
     )
     trainer.train()
 

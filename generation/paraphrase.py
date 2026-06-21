@@ -31,6 +31,7 @@ def generate_paraphrases(
     original_texts: list[str],
     device: torch.device,
     num_samples: int = 2,
+    show_progress: bool = True,
 ) -> list[list[str]]:
     """Generate ``num_samples`` paraphrases per source text."""
     tokenizer.padding_side = "left"
@@ -38,11 +39,15 @@ def generate_paraphrases(
         tokenizer.pad_token = tokenizer.eos_token
 
     outputs_per_text: list[list[str]] = [[] for _ in original_texts]
+    batch_range = range(0, len(original_texts), GENERATION_BATCH_SIZE)
     for sample_idx in range(num_samples):
-        for start in tqdm(
-            range(0, len(original_texts), GENERATION_BATCH_SIZE),
-            desc=f"paraphrase sample {sample_idx + 1}/{num_samples}",
-        ):
+        iterator = batch_range
+        if show_progress:
+            iterator = tqdm(
+                batch_range,
+                desc=f"paraphrase sample {sample_idx + 1}/{num_samples}",
+            )
+        for start in iterator:
             chunk = original_texts[start : start + GENERATION_BATCH_SIZE]
             prompts = [build_paraphrase_prompt(text) for text in chunk]
             inputs = _build_chat_inputs(tokenizer, prompts, device)

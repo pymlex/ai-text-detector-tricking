@@ -170,7 +170,8 @@ bash scripts/run_all.sh
 | `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
 | `DPO_LEARNING_RATE` | `1e-5` | Adam learning rate |
 | `DPO_BETA` | `0.1` | DPO temperature |
-| `MONITORING_FRACTION` | `0.1` | Validation monitor interval in epochs |
+| `DPO_LOGGING_STEPS` | `20` | Compact DPO log interval |
+| `DPO_MONITOR_EVERY_STEPS` | `20` | Validation detector eval interval |
 | `CHECKPOINT_FRACTION` | `0.5` | Checkpoint interval in epochs |
 | `HF_DATASET_REPO` | `pymlex/ai-generated-texts` | Preference dataset repo |
 | `HF_MODEL_REPO` | `pymlex/Qwen2.5-0.5B-Human` | Fine-tuned model repo |

@@ -21,10 +21,12 @@ class OculusDetector:
         self.model = DesklibAIDetectionModel.from_pretrained(model_id).to(device)
         self.model.eval()
 
-    def batch_logits(self, texts: list[str]) -> list[float]:
+    def batch_logits(self, texts: list[str], show_progress: bool = True) -> list[float]:
         """Return raw detector logits for a list of texts."""
         logits_out: list[float] = []
-        for start in tqdm(range(0, len(texts), DETECTOR_BATCH_SIZE), desc="detect"):
+        batch_range = range(0, len(texts), DETECTOR_BATCH_SIZE)
+        iterator = tqdm(batch_range, desc="detect") if show_progress else batch_range
+        for start in iterator:
             chunk = texts[start : start + DETECTOR_BATCH_SIZE]
             inputs = self.tokenizer(
                 chunk,
