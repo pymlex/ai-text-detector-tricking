@@ -6,7 +6,7 @@ DPO fine-tuning of [Qwen/Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen
 
 Source corpus: [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), field `resumen`. After token-length filtering with the Qwen tokenizer at $L \le 512$, the retained split sizes are train $8891$, validation $1107$, test $1112$.
 
-For each train abstract, the base instruct model samples two paraphrases at temperature $0.7$. Oculus returns logit $z$ per paraphrase. The lower logit becomes `chosen`, the higher becomes `rejected`. Pairs with $|z_1 - z_2| < \tau$ are discarded, where $\tau$ is `PREFERENCE_LOGIT_MARGIN`. Run `python scripts/analyze_logit_margin.py` on 100 probe pairs to calibrate $\tau$ from the logit-gap histogram.
+For each train abstract, the base instruct model samples two paraphrases at temperature $0.7$. Oculus returns logit $z$ per paraphrase. The lower logit becomes `chosen`, the higher becomes `rejected`. Pairs with $|z_1 - z_2| < \tau$ are discarded, where $\tau$ is `PREFERENCE_LOGIT_MARGIN`. Run `python scripts/analyze_logit_margin.py` on 512 probe pairs to calibrate $\tau$ from the logit-gap histogram.
 
 DPO maximises the margin between chosen and rejected completions relative to a frozen reference policy:
 
@@ -162,9 +162,9 @@ bash scripts/run_all.sh
 | `DATASET_ID` | `Flaglab/academic-knowledge-abstracts-es` | Source abstracts |
 | `MAX_TOKENS` | `512` | Filter and generation budget |
 | `GENERATION_TEMPERATURE` | `0.7` | Paraphrase sampling temperature |
-| `PREFERENCE_LOGIT_MARGIN` | `0.01` | Minimum $|z_1 - z_2|$ for DPO pairs |
+| `PREFERENCE_LOGIT_MARGIN` | `1` | Minimum $|z_1 - z_2|$ for DPO pairs |
 | `GENERATION_BATCH_SIZE` | `128` | Paraphrase mini-batch on GPU |
-| `ANALYZE_MARGIN_SAMPLES` | `128` | Probe size for logit-gap histogram |
+| `ANALYZE_MARGIN_SAMPLES` | `512` | Probe size for logit-gap histogram |
 | `DPO_EPOCHS` | `2` | Training epochs |
 | `DPO_PER_DEVICE_BATCH_SIZE` | `32` | Mini-batch size |
 | `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
