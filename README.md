@@ -16,7 +16,7 @@ $$
 
 with $\beta = 0.1$, learning rate $10^{-5}$, cosine schedule, warmup ratio $0.1$, bf16 on GPU, four epochs, effective batch size $32$.
 
-Post-training evaluation generates one paraphrase per validation and test abstract with the fine-tuned model, scores each output with Oculus, and treats label $1$ as AI-generated. Metrics at threshold $0.5$: Accuracy, Precision, Recall, F1, MCC, ROC-AUC, mean logit.
+Post-training evaluation generates one paraphrase per validation and test abstract with the base and fine-tuned models, scores each output with Oculus, and treats label $1$ as AI-generated. Metrics at threshold $0.5$: Accuracy, Precision, Recall, F1, MCC, ROC-AUC, mean logit.
 
 ## Architecture
 
@@ -158,6 +158,59 @@ bash scripts/run_all.sh
 
 GitHub device login, Hugging Face uploads, and results push in one script.
 
+## Results
+
+### Data preparation
+
+After filtering at $L \le 512$ tokens: train $8891$, validation $1107$, test $1112$.
+
+![Token length distribution](results/plots/token_length_distribution.png)
+
+### Preference construction
+
+From $8891$ train abstracts the pipeline retained $6396$ DPO pairs. $2495$ pairs were discarded because the logit gap $|z_1 - z_2|$ fell below the threshold $\tau = 1$. No empty paraphrase pairs were observed.
+
+Logit margin probe on $512$ train pairs: mean $|z_1 - z_2| = 2.42$, median $1.80$, IQR $[0.87, 3.36]$, maximum gap $11.24$.
+
+![Logit margin probe histogram](results/plots/logit_margin_probe_hist.png)
+
+![Chosen vs rejected logits](results/plots/logit_chosen_rejected_hist.png)
+
+![Logit probe summary](results/plots/analysis/logit_probe_summary.png)
+
+### Training
+
+DPO ran for four epochs on $6396$ preference pairs. On a validation subset of $276$ texts, mean detector AI probability at step $0$ was $0.674$ and at the last monitor step $0.244$, a change of $-0.430$. Final logged DPO loss was $0.256$.
+
+![Training summary](results/plots/training_summary.png)
+
+![Training monitor](results/plots/analysis/training_monitor_analysis.png)
+
+### Evaluation
+
+One paraphrase per validation and test abstract was generated with the base instruct model and with the fine-tuned checkpoint. Oculus scored each output. Ground-truth label is AI-generated. Threshold on detector probability: $0.5$.
+
+| Model | Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| base | validation | 1107 | 0.6550 | 1.4619 | 0.6712 | 0.0000 | n/a | 0.8032 |
+| base | test | 1112 | 0.6532 | 1.5581 | 0.6655 | 0.0000 | n/a | 0.7991 |
+| fine-tuned | validation | 1107 | 0.2264 | -2.0100 | 0.1716 | 0.0000 | n/a | 0.2930 |
+| fine-tuned | test | 1112 | 0.2391 | -1.8733 | 0.1835 | 0.0000 | n/a | 0.3100 |
+
+On the test split the fine-tuned model lowered mean AI probability from $0.653$ to $0.239$ and mean logit from $1.558$ to $-1.873$ relative to the base model. Under the AI-positive labelling convention, accuracy and F1 drop because fewer paraphrases exceed the $0.5$ threshold. MCC remains zero and ROC-AUC is undefined because all ground-truth labels are AI-generated.
+
+![Evaluation summary](results/plots/analysis/evaluation_summary.png)
+
+![Score distributions](results/plots/analysis/score_distributions.png)
+
+![Detector probability validation](results/plots/detector_probability_hist_validation.png)
+
+![Detector probability test](results/plots/detector_probability_hist_test.png)
+
+![Confusion matrix validation](results/plots/confusion_matrix_validation.png)
+
+![Confusion matrix test](results/plots/confusion_matrix_test.png)
+
 ## Evaluation metrics
 
 For generated paraphrases with true label $y=1$ and detector probability $\hat{p}$, threshold $t=0.5$, prediction $\hat{y} = \mathbb{1}[\hat{p} \ge t]$:
@@ -175,13 +228,13 @@ Lower mean detector probability and MCC near zero indicate successful evasion un
 If you found this project useful, please cite it as:
 
 ```bibtex
-@software{zyukov2026aitexttricking,
-  author = {Zyukov, Alex},
-  title = {DPO Fine-Tuning Against Multilingual AI Text Detectors},
-  year = {2026},
-  url = {https://github.com/pymlex/ai-text-detector-tricking},
-  publisher = {GitHub},
-  organization = {pymlex}
+@misc{zyukov2026aitexttricking,
+  title         = {{DPO Fine-Tuning Against Multilingual AI Text Detectors}},
+  author        = {Zyukov, Alex},
+  year          = {2026},
+  url           = {https://github.com/pymlex/ai-text-detector-tricking},
+  publisher     = {GitHub},
+  organization  = {pymlex}
 }
 ```
 
@@ -190,31 +243,31 @@ The project is under GPL-3.0 license.
 ## References
 
 ```bibtex
-@article{nicks2024detectors,
-  title = {Language Model Detectors Are Easily Optimized Against},
-  author = {Nicks, Cameron and Chua, Jeremy and Liu, Stephen and others},
-  year = {2024},
-  eprint = {2406.07490},
+@misc{nicks2024detectors,
+  title         = {{Language Model Detectors Are Easily Optimized Against}},
+  author        = {Nicks, Cameron and Chua, Jeremy and Liu, Stephen and others},
+  year          = {2024},
+  eprint        = {2406.07490},
   archivePrefix = {arXiv},
-  primaryClass = {cs.CL},
-  url = {https://arxiv.org/abs/2406.07490}
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2406.07490}
 }
 ```
 
 ```bibtex
 @misc{flaglab2025abstracts,
-  title = {Academic Knowledge Abstracts Spanish},
-  author = {Flaglab},
-  year = {2025},
-  url = {https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es}
+  title         = {{Academic Knowledge Abstracts Spanish}},
+  author        = {Flaglab},
+  year          = {2025},
+  url           = {https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es}
 }
 ```
 
 ```bibtex
 @misc{oculus2026,
-  title = {Oculus 2.0 Multilingual AI Text Detector},
-  author = {danibor},
-  year = {2026},
-  url = {https://huggingface.co/danibor/oculus-v2.0-multilingual}
+  title         = {{Oculus 2.0 Multilingual AI Text Detector}},
+  author        = {danibor},
+  year          = {2026},
+  url           = {https://huggingface.co/danibor/oculus-v2.0-multilingual}
 }
 ```

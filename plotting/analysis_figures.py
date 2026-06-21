@@ -57,57 +57,41 @@ def plot_training_and_monitor(snapshot: AnalysisSnapshot) -> Path | None:
         return None
 
     output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(4, 1, figsize=(10, 12), sharex=False)
+    fig, axes = plt.subplots(3, 1, figsize=(10, 9), sharex=False)
 
     if train_path.exists():
         train_frame = pd.read_csv(train_path).dropna(subset=["loss"])
         if not train_frame.empty:
-            steps = train_frame["step"] if "step" in train_frame.columns else train_frame.index
-            axes[0].plot(steps, train_frame["loss"], marker="o", markersize=3)
+            x_values = train_frame["epoch"] if "epoch" in train_frame.columns else train_frame.index
+            x_label = "Epoch" if "epoch" in train_frame.columns else "Step"
+            axes[0].plot(x_values, train_frame["loss"], marker="o", markersize=3)
+            axes[0].set_xlabel(x_label)
             axes[0].set_ylabel("DPO loss")
             axes[0].set_title("Training loss")
             axes[0].grid(alpha=0.5)
-            if "rewards/accuracies" in train_frame.columns:
-                reward_frame = train_frame.dropna(subset=["rewards/accuracies"])
-                if not reward_frame.empty:
-                    reward_steps = (
-                        reward_frame["step"]
-                        if "step" in reward_frame.columns
-                        else reward_frame.index
-                    )
-                    axes[1].plot(
-                        reward_steps,
-                        reward_frame["rewards/accuracies"],
-                        marker="o",
-                        markersize=3,
-                        color="tab:green",
-                    )
-            axes[1].set_ylabel("Reward accuracy")
-            axes[1].set_title("Reward accuracy")
-            axes[1].grid(alpha=0.5)
 
     if valid_path.exists():
         valid_frame = pd.read_csv(valid_path)
         if not valid_frame.empty:
-            axes[2].plot(
+            axes[1].plot(
                 valid_frame["step"],
                 valid_frame["mean_probability"],
                 marker="o",
                 color="tab:blue",
             )
-            axes[2].set_ylabel("Mean AI probability")
-            axes[2].set_title("Validation mean detector probability")
-            axes[2].grid(alpha=0.5)
-            axes[3].plot(
+            axes[1].set_ylabel("Mean AI probability")
+            axes[1].set_title("Validation mean detector probability")
+            axes[1].grid(alpha=0.5)
+            axes[2].plot(
                 valid_frame["step"],
                 valid_frame["mean_logit"],
                 marker="s",
                 color="tab:orange",
             )
-            axes[3].set_xlabel("Training step")
-            axes[3].set_ylabel("Mean logit")
-            axes[3].set_title("Validation mean detector logit")
-            axes[3].grid(alpha=0.5)
+            axes[2].set_xlabel("Training step")
+            axes[2].set_ylabel("Mean logit")
+            axes[2].set_title("Validation mean detector logit")
+            axes[2].grid(alpha=0.5)
 
     fig.tight_layout()
     path = output_dir / "training_monitor_analysis.png"

@@ -33,7 +33,7 @@ def plot_evaluation_summary() -> Path | None:
     x = np.arange(len(splits))
     bar_width = 0.35
     output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 
     def _split_values(report: dict, field: str) -> list[float]:
         values = []
@@ -62,14 +62,6 @@ def plot_evaluation_summary() -> Path | None:
             label=label,
             color=color,
         )
-        axes[2].bar(
-            x + offset,
-            _split_values(report, "mcc"),
-            width=bar_width,
-            label=f"{label}, MCC",
-            color=color,
-            alpha=0.85,
-        )
 
     axes[0].set_ylabel("Mean AI probability")
     axes[0].set_title("Mean detector probability on paraphrases")
@@ -82,12 +74,6 @@ def plot_evaluation_summary() -> Path | None:
     axes[1].set_xticks(x, splits)
     axes[1].legend()
     axes[1].grid(alpha=0.5)
-
-    axes[2].set_ylabel("MCC")
-    axes[2].set_title("MCC, label AI, threshold 0.5")
-    axes[2].set_xticks(x, splits)
-    axes[2].legend()
-    axes[2].grid(alpha=0.5)
 
     fig.tight_layout()
     path = output_dir / "evaluation_summary.png"
@@ -117,16 +103,13 @@ def plot_score_distributions() -> Path | None:
     if len(splits) == 1:
         axes = np.array(axes).reshape(2, 1)
 
+    prob_edges = np.linspace(0.0, 1.0, 51)
+
     for column_index, split_name in enumerate(splits):
         final_frame = final_frames[split_name]
         base_frame = base_frames[split_name]
         logit_values = [
             frame["detector_logit"].to_numpy(dtype=np.float64)
-            for frame in (final_frame, base_frame)
-            if frame is not None
-        ]
-        prob_values = [
-            frame["detector_probability"].to_numpy(dtype=np.float64)
             for frame in (final_frame, base_frame)
             if frame is not None
         ]
@@ -136,11 +119,6 @@ def plot_score_distributions() -> Path | None:
         logit_edges = np.linspace(
             min(value.min() for value in logit_values),
             max(value.max() for value in logit_values),
-            51,
-        )
-        prob_edges = np.linspace(
-            min(value.min() for value in prob_values),
-            max(value.max() for value in prob_values),
             51,
         )
 
@@ -181,7 +159,8 @@ def plot_score_distributions() -> Path | None:
         axes[0, column_index].legend()
         axes[0, column_index].grid(alpha=0.5)
         axes[1, column_index].set_title(f"{split_name}, probability, n={sample_count}")
-        axes[1, column_index].set_xlabel("Detector score")
+        axes[1, column_index].set_xlabel("AI probability")
+        axes[1, column_index].set_xlim(0.0, 1.0)
         axes[1, column_index].set_ylabel("Count")
         axes[1, column_index].legend()
         axes[1, column_index].grid(alpha=0.5)

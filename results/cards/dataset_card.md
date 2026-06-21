@@ -54,53 +54,53 @@ The full pipeline is published on [GitHub](https://github.com/pymlex/ai-text-det
 If you found this dataset useful, please cite it as:
 
 ```bibtex
-@dataset{zyukov2026aigeneratedtexts,
-  author = {Zyukov, Alex},
-  title = {Spanish DPO Preference Pairs for Detector Evasion},
-  year = {2026},
-  url = {https://huggingface.co/datasets/pymlex/ai-generated-texts},
-  publisher = {Hugging Face}
+@misc{zyukov2026aigeneratedtexts,
+  title         = {{Spanish DPO Preference Pairs for Detector Evasion}},
+  author        = {Zyukov, Alex},
+  year          = {2026},
+  url           = {https://huggingface.co/datasets/pymlex/ai-generated-texts},
+  publisher     = {Hugging Face}
 }
 ```
 
 ```bibtex
-@software{zyukov2026aitexttricking,
-  author = {Zyukov, Alex},
-  title = {DPO Fine-Tuning Against Multilingual AI Text Detectors},
-  year = {2026},
-  url = {https://github.com/pymlex/ai-text-detector-tricking},
-  publisher = {GitHub},
-  organization = {pymlex}
+@misc{zyukov2026aitexttricking,
+  title         = {{DPO Fine-Tuning Against Multilingual AI Text Detectors}},
+  author        = {Zyukov, Alex},
+  year          = {2026},
+  url           = {https://github.com/pymlex/ai-text-detector-tricking},
+  publisher     = {GitHub},
+  organization  = {pymlex}
 }
 ```
 
 ```bibtex
-@article{nicks2024detectors,
-  title = {Language Model Detectors Are Easily Optimized Against},
-  author = {Nicks, Cameron and Chua, Jeremy and Liu, Stephen and others},
-  year = {2024},
-  eprint = {2406.07490},
+@misc{nicks2024detectors,
+  title         = {{Language Model Detectors Are Easily Optimized Against}},
+  author        = {Nicks, Cameron and Chua, Jeremy and Liu, Stephen and others},
+  year          = {2024},
+  eprint        = {2406.07490},
   archivePrefix = {arXiv},
-  primaryClass = {cs.CL},
-  url = {https://arxiv.org/abs/2406.07490}
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2406.07490}
 }
 ```
 
 ```bibtex
 @misc{oculus2026,
-  title = {Oculus 2.0 Multilingual AI Text Detector},
-  author = {danibor},
-  year = {2026},
-  url = {https://huggingface.co/danibor/oculus-v2.0-multilingual}
+  title         = {{Oculus 2.0 Multilingual AI Text Detector}},
+  author        = {danibor},
+  year          = {2026},
+  url           = {https://huggingface.co/danibor/oculus-v2.0-multilingual}
 }
 ```
 
 ```bibtex
 @misc{flaglab2025abstracts,
-  title = {Academic Knowledge Abstracts Spanish},
-  author = {Flaglab},
-  year = {2025},
-  url = {https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es}
+  title         = {{Academic Knowledge Abstracts Spanish}},
+  author        = {Flaglab},
+  year          = {2025},
+  url           = {https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es}
 }
 ```
 
