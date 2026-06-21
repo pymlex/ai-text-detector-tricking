@@ -12,7 +12,8 @@ def _format_split_metrics(name: str, metrics: SplitMetrics) -> str:
     )
 
 
-def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:    pref = snapshot.preference_stats
+def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
+    pref = snapshot.preference_stats
     lines = [
         "# Results analysis",
         "",
