@@ -1,15 +1,7 @@
 from __future__ import annotations
 
 from analysis.collect import AnalysisSnapshot
-from schemas.evaluation import SplitMetrics, format_optional_float
-
-
-def _format_split_metrics(name: str, metrics: SplitMetrics) -> str:
-    return (
-        f"| {name} | {metrics.n_samples} | {metrics.mean_probability:.4f} | "
-        f"{metrics.mean_logit:.4f} | {metrics.accuracy:.4f} | {metrics.mcc:.4f} | "
-        f"{format_optional_float(metrics.roc_auc)} | {metrics.f1:.4f} |"
-    )
+from analysis.metrics_table import render_evaluation_metrics_table
 
 
 def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
@@ -69,20 +61,21 @@ def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
         lines.append("![Training monitor analysis](../plots/analysis/training_monitor_analysis.png)")
         lines.append("")
 
-    if snapshot.evaluation is not None:
-        report = snapshot.evaluation
+    if snapshot.evaluation is not None or snapshot.base_evaluation is not None:
+        threshold = (
+            snapshot.evaluation.threshold
+            if snapshot.evaluation is not None
+            else snapshot.base_evaluation.threshold
+        )
         lines.extend(
             [
-                "## Final evaluation",
+                "## Evaluation",
                 "",
-                "Paraphrases from the fine-tuned model are scored by Oculus. "
+                "Paraphrases from the base and fine-tuned models are scored by Oculus. "
                 "Ground-truth label is AI-generated. Threshold on detector probability: "
-                f"{report.threshold:.1f}.",
+                f"{threshold:.1f}.",
                 "",
-                "| Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |",
-                "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-                _format_split_metrics("validation", report.validation),
-                _format_split_metrics("test", report.test),
+                render_evaluation_metrics_table(snapshot),
                 "",
                 "Lower mean probability and MCC near zero indicate weaker detector response "
                 "on model paraphrases under the AI-positive labelling convention.",

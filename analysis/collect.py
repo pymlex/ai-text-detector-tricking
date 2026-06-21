@@ -51,6 +51,7 @@ class AnalysisSnapshot(BaseModel):
     logit_probe: LogitProbeStats | None
     training_monitor: TrainingMonitorStats
     evaluation: EvaluationReport | None
+    base_evaluation: EvaluationReport | None
 
 
 def _load_logit_probe_stats() -> LogitProbeStats | None:
@@ -122,8 +123,8 @@ def _load_training_monitor_stats() -> TrainingMonitorStats:
     )
 
 
-def _load_evaluation_report() -> EvaluationReport | None:
-    report_path = METRICS_DIR / "evaluation_report.json"
+def _load_evaluation_report(filename: str) -> EvaluationReport | None:
+    report_path = METRICS_DIR / filename
     if not report_path.exists():
         return None
     return EvaluationReport.model_validate_json(report_path.read_text(encoding="utf-8"))
@@ -135,7 +136,8 @@ def collect_analysis_snapshot() -> AnalysisSnapshot:
         preference_stats=_load_preference_stats(),
         logit_probe=_load_logit_probe_stats(),
         training_monitor=_load_training_monitor_stats(),
-        evaluation=_load_evaluation_report(),
+        evaluation=_load_evaluation_report("evaluation_report.json"),
+        base_evaluation=_load_evaluation_report("base_evaluation_report.json"),
     )
 
 

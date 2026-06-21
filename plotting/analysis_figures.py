@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 
 from analysis.collect import AnalysisSnapshot
-from utils.paths import ANALYSIS_DIR, METRICS_DIR, MONITORING_DIR, PLOTS_DIR, PREFERENCES_DIR
+from plotting.evaluation_plots import plot_evaluation_summary, plot_score_distributions
+from utils.paths import ANALYSIS_DIR, MONITORING_DIR, PLOTS_DIR, PREFERENCES_DIR
 
 
 def _analysis_plot_dir() -> Path:
@@ -110,89 +111,6 @@ def plot_training_and_monitor(snapshot: AnalysisSnapshot) -> Path | None:
 
     fig.tight_layout()
     path = output_dir / "training_monitor_analysis.png"
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return path
-
-
-def plot_evaluation_summary() -> Path | None:
-    report_path = METRICS_DIR / "evaluation_report.json"
-    if not report_path.exists():
-        return None
-    report = json.loads(report_path.read_text(encoding="utf-8"))
-    labels = ["validation", "test"]
-    x = np.arange(len(labels))
-    width = 0.55
-
-    output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
-
-    prob_values = [float(report[split]["mean_probability"]) for split in labels]
-    axes[0].bar(x, prob_values, width=width, color="tab:blue")
-    axes[0].set_ylabel("Mean AI probability")
-    axes[0].set_title("Mean detector probability on paraphrases")
-    axes[0].set_xticks(x, labels)
-    axes[0].grid(alpha=0.5)
-
-    logit_values = [float(report[split]["mean_logit"]) for split in labels]
-    axes[1].bar(x, logit_values, width=width, color="tab:orange")
-    axes[1].set_ylabel("Mean logit")
-    axes[1].set_title("Mean detector logit on paraphrases")
-    axes[1].set_xticks(x, labels)
-    axes[1].grid(alpha=0.5)
-
-    mcc_values = [float(report[split]["mcc"]) for split in labels]
-    f1_values = [float(report[split]["f1"]) for split in labels]
-    roc_values = [
-        float(report[split]["roc_auc"]) if report[split]["roc_auc"] is not None else np.nan
-        for split in labels
-    ]
-    metric_width = width / 3
-    axes[2].bar(x - metric_width, mcc_values, width=metric_width, label="MCC")
-    axes[2].bar(x, f1_values, width=metric_width, label="F1")
-    axes[2].bar(x + metric_width, roc_values, width=metric_width, label="ROC-AUC")
-    axes[2].set_ylabel("Score")
-    axes[2].set_title("Classification metrics, label AI, threshold 0.5")
-    axes[2].set_xticks(x, labels)
-    axes[2].legend()
-    axes[2].grid(alpha=0.5)
-
-    fig.tight_layout()
-    path = output_dir / "evaluation_summary.png"
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
-    return path
-
-
-def plot_score_distributions() -> Path | None:
-    paths = {
-        "validation": METRICS_DIR / "final_validation_scores.csv",
-        "test": METRICS_DIR / "final_test_scores.csv",
-    }
-    frames = {name: pd.read_csv(path) for name, path in paths.items() if path.exists()}
-    if not frames:
-        return None
-
-    output_dir = _analysis_plot_dir()
-    split_names = list(frames.keys())
-    fig, axes = plt.subplots(2, len(split_names), figsize=(6 * len(split_names), 8), sharex="col")
-    if len(split_names) == 1:
-        axes = np.array(axes).reshape(2, 1)
-
-    for column_index, split_name in enumerate(split_names):
-        frame = frames[split_name]
-        axes[0, column_index].hist(frame["detector_logit"], bins=50, color="tab:orange")
-        axes[0, column_index].set_title(f"{split_name}, logit, n={len(frame)}")
-        axes[0, column_index].set_ylabel("Count")
-        axes[0, column_index].grid(alpha=0.5)
-        axes[1, column_index].hist(frame["detector_probability"], bins=50, color="tab:blue")
-        axes[1, column_index].set_title(f"{split_name}, probability, n={len(frame)}")
-        axes[1, column_index].set_xlabel("Detector score")
-        axes[1, column_index].set_ylabel("Count")
-        axes[1, column_index].grid(alpha=0.5)
-
-    fig.tight_layout()
-    path = output_dir / "score_distributions.png"
     fig.savefig(path, dpi=150)
     plt.close(fig)
     return path

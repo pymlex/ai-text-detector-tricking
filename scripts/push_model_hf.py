@@ -9,7 +9,7 @@ from huggingface_hub import HfApi, login
 
 from constants import HF_MODEL_REPO
 from utils.config_loader import require_env
-from utils.paths import CARDS_DIR, CHECKPOINTS_DIR, PLOTS_DIR
+from utils.paths import CARDS_DIR, CHECKPOINTS_DIR, METRICS_DIR, PLOTS_DIR
 
 
 def _upload_assets(api: HfApi, repo_id: str, assets: list[tuple[Path, str]]) -> None:
@@ -65,11 +65,13 @@ def main() -> None:
         HF_MODEL_REPO,
         [
             (PLOTS_DIR / "analysis" / "evaluation_summary.png", "evaluation_summary.png"),
-            (PLOTS_DIR / "analysis" / "training_monitor_analysis.png", "training_monitor_analysis.png"),
             (PLOTS_DIR / "analysis" / "score_distributions.png", "score_distributions.png"),
+            (PLOTS_DIR / "analysis" / "training_monitor_analysis.png", "training_monitor_analysis.png"),
             (PLOTS_DIR / "training_summary.png", "training_summary.png"),
             (PLOTS_DIR / "detector_probability_hist_validation.png", "detector_probability_hist_validation.png"),
             (PLOTS_DIR / "detector_probability_hist_test.png", "detector_probability_hist_test.png"),
+            (METRICS_DIR / "evaluation_report.json", "evaluation_report.json"),
+            (METRICS_DIR / "base_evaluation_report.json", "base_evaluation_report.json"),
         ],
     )
     print(f"Pushed model to https://huggingface.co/{HF_MODEL_REPO}")

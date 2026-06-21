@@ -10,28 +10,12 @@ from analysis.citations import (
     PROJECT_CITATION,
 )
 from analysis.collect import AnalysisSnapshot
+from analysis.metrics_table import render_evaluation_metrics_table
 from constants import HF_DATASET_REPO, HF_MODEL_REPO, MODEL_ID
-from schemas.evaluation import format_optional_float
 
 
 def _metrics_table(snapshot: AnalysisSnapshot) -> str:
-    if snapshot.evaluation is None:
-        return "_Evaluation metrics pending. Run `python main.py --step evaluate` first._"
-    report = snapshot.evaluation
-    return "\n".join(
-        [
-            "| Split | n | mean prob | mean logit | accuracy | MCC | ROC-AUC | F1 |",
-            "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-            f"| validation | {report.validation.n_samples} | "
-            f"{report.validation.mean_probability:.4f} | {report.validation.mean_logit:.4f} | "
-            f"{report.validation.accuracy:.4f} | {report.validation.mcc:.4f} | "
-            f"{format_optional_float(report.validation.roc_auc)} | {report.validation.f1:.4f} |",
-            f"| test | {report.test.n_samples} | "
-            f"{report.test.mean_probability:.4f} | {report.test.mean_logit:.4f} | "
-            f"{report.test.accuracy:.4f} | {report.test.mcc:.4f} | "
-            f"{format_optional_float(report.test.roc_auc)} | {report.test.f1:.4f} |",
-        ]
-    )
+    return render_evaluation_metrics_table(snapshot)
 
 
 def render_model_card(snapshot: AnalysisSnapshot) -> str:
@@ -74,7 +58,7 @@ Research on detector robustness and red-teaming of AI-generated text classifiers
 
 ## Evaluation setup
 
-Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract, scores each output with Oculus, and treats label 1 as AI-generated at threshold 0.5 on detector probability.
+Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Post-training evaluation generates one paraphrase per validation and test abstract with the base and fine-tuned models, scores each output with Oculus, and treats label 1 as AI-generated at threshold 0.5 on detector probability.
 
 {monitor_text}
 
@@ -85,6 +69,8 @@ Hardware: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inferen
 Lower mean probability and MCC near zero indicate weaker detector response on model paraphrases under the AI-positive labelling convention.
 
 ![Evaluation summary](https://huggingface.co/{HF_MODEL_REPO}/resolve/main/assets/evaluation_summary.png)
+
+![Score distributions](https://huggingface.co/{HF_MODEL_REPO}/resolve/main/assets/score_distributions.png)
 
 ![Training monitor](https://huggingface.co/{HF_MODEL_REPO}/resolve/main/assets/training_monitor_analysis.png)
 
