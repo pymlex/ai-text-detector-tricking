@@ -124,7 +124,37 @@ cp .env.example .env
 
 Set `HF_TOKEN` in `.env`. Optional: `GITHUB_NAME`, `GITHUB_EMAIL`, batch sizes, DPO hyperparameters.
 
-### 2. Run pipeline steps
+### 2. Pipeline steps
+
+**`python main.py --step prepare`**
+
+Downloads [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es), filters abstracts to $L \le 512$ tokens with the Qwen tokenizer, and saves train, validation, and test splits to `results/data/filtered_abstracts`. Writes the token-length histogram to `results/plots/token_length_distribution.png`.
+
+**`python scripts/analyze_logit_margin.py`**
+
+Generates two paraphrases per text for 512 train abstracts with the base model, scores them with Oculus, and builds histograms of $|z_1 - z_2|$. Output: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`, `results/plots/logit_chosen_rejected_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before the next step.
+
+**`python main.py --step preferences`**
+
+For every train abstract, samples two paraphrases with the base Qwen model, ranks them by detector logit, and keeps pairs with $|z_1 - z_2| \ge \texttt{PREFERENCE\_LOGIT\_MARGIN}$. Saves `results/preferences/dpo_preferences.csv` and `results/preferences/dpo_hf_dataset`.
+
+**`python main.py --step train`**
+
+Runs DPO for four epochs on the fixed preference dataset. Logs compact train metrics every 20 steps, evaluates the detector on a validation subset every 20 steps starting from step 0, saves checkpoints to `results/checkpoints/`, and writes train and validation history to `results/monitoring/`.
+
+**`python main.py --step evaluate`**
+
+Generates one paraphrase per validation and test abstract with the fine-tuned model, scores each output with Oculus, and writes per-text CSV files, aggregated metrics, confusion matrices, and histograms to `results/metrics/` and `results/plots/`.
+
+**`python main.py --step analyze`**
+
+Collects all saved metrics, builds analysis plots in `results/plots/analysis/`, writes the narrative report `results/analysis/ANALYSIS.md`, and renders Hugging Face cards to `results/cards/`.
+
+**`bash scripts/publish_all.sh`**
+
+Runs analysis if needed, then pushes the DPO dataset with logit histograms to [pymlex/ai-generated-texts](https://huggingface.co/datasets/pymlex/ai-generated-texts), the fine-tuned weights and model card to [pymlex/Qwen2.5-0.5B-Human](https://huggingface.co/pymlex/Qwen2.5-0.5B-Human), and plots, metrics, predictions, and analysis to GitHub.
+
+Full sequence:
 
 ```bash
 python main.py --step prepare
@@ -136,58 +166,11 @@ python main.py --step analyze
 bash scripts/publish_all.sh
 ```
 
-`analyze` builds `results/analysis/ANALYSIS.md`, analysis plots under `results/plots/analysis/`, and HF cards under `results/cards/`. `publish_all` pushes the DPO dataset and assets to Hugging Face, the fine-tuned model with evaluation figures, and metrics with predictions to GitHub.
-
-Probe outputs: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`, `results/plots/logit_chosen_rejected_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before building preferences.
-
-Or the full automated run with GitHub device login, Hugging Face uploads, and results push:
+Automated run with GitHub device login, Hugging Face uploads, and results push:
 
 ```bash
 bash scripts/run_all.sh
 ```
-
-### 3. Artefacts
-
-| Path | Content |
-| --- | --- |
-| `results/data/filtered_abstracts` | Token-filtered splits |
-| `results/plots/token_length_distribution.png` | Length histogram after filtering |
-| `results/preferences/dpo_preferences.csv` | Full preference table with logits |
-| `results/preferences/dpo_hf_dataset` | HF-ready DPO dataset |
-| `results/checkpoints/` | DPO checkpoints every half epoch |
-| `results/monitoring/monitor_step_*.json` | Validation detector scores during training |
-| `results/plots/training_summary.png` | Monitoring summary |
-| `results/metrics/final_*_scores.csv` | Per-text detector scores |
-| `results/metrics/evaluation_report.json` | Aggregated metrics |
-| `results/plots/detector_probability_hist_*.png` | Validation and test histograms |
-| `results/analysis/ANALYSIS.md` | Narrative analysis with metrics |
-| `results/cards/model_card.md` | Generated Hugging Face model card |
-| `results/cards/dataset_card.md` | Generated Hugging Face dataset card |
-| `results/plots/analysis/` | Analysis figures for GitHub and HF |
-
-## Environment variables
-
-| Variable | Default | Role |
-| --- | --- | --- |
-| `MODEL_ID` | `Qwen/Qwen2.5-0.5B-Instruct` | Base generator and DPO model |
-| `DETECTOR_MODEL_ID` | `danibor/oculus-v2.0-multilingual` | AI detector |
-| `DATASET_ID` | `Flaglab/academic-knowledge-abstracts-es` | Source abstracts |
-| `MAX_TOKENS` | `512` | Filter and generation budget |
-| `GENERATION_TEMPERATURE` | `0.7` | Paraphrase sampling temperature |
-| `PREFERENCE_LOGIT_MARGIN` | `1` | Minimum $|z_1 - z_2|$ for DPO pairs |
-| `GENERATION_BATCH_SIZE` | `128` | Paraphrase mini-batch on GPU |
-| `ANALYZE_MARGIN_SAMPLES` | `512` | Probe size for logit-gap histogram |
-| `DPO_EPOCHS` | `4` | Training epochs |
-| `DPO_MONITOR_VALID_DIVISOR` | `4` | Validation monitor uses 1/N of the validation split |
-| `DPO_PER_DEVICE_BATCH_SIZE` | `32` | Mini-batch size |
-| `DPO_GRADIENT_ACCUMULATION_STEPS` | `1` | Gradient accumulation |
-| `DPO_LEARNING_RATE` | `1e-5` | Adam learning rate |
-| `DPO_BETA` | `0.1` | DPO temperature |
-| `DPO_LOGGING_STEPS` | `20` | Compact DPO log interval |
-| `DPO_MONITOR_EVERY_STEPS` | `20` | Validation detector eval interval |
-| `CHECKPOINT_FRACTION` | `0.5` | Checkpoint interval in epochs |
-| `HF_DATASET_REPO` | `pymlex/ai-generated-texts` | Preference dataset repo |
-| `HF_MODEL_REPO` | `pymlex/Qwen2.5-0.5B-Human` | Fine-tuned model repo |
 
 ## Evaluation metrics
 
