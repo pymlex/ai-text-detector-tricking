@@ -1,0 +1,7 @@
+{
+  "step": 19,
+  "epoch": 0.095,
+  "mean_logit": -0.6084369651766287,
+  "mean_probability": 0.40586009918978067,
+  "n_samples": 1107
+}

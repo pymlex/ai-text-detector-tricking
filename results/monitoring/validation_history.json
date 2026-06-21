@@ -1,0 +1,121 @@
+[
+  {
+    "step": 0,
+    "epoch": 0.0,
+    "mean_logit": 1.6684130907456889,
+    "mean_probability": 0.67397724253445,
+    "n_samples": 276
+  },
+  {
+    "step": 40,
+    "epoch": 0.25,
+    "mean_logit": -0.8736905024211475,
+    "mean_probability": 0.36054349457777585,
+    "n_samples": 276
+  },
+  {
+    "step": 80,
+    "epoch": 0.5,
+    "mean_logit": -1.510873503446498,
+    "mean_probability": 0.2834916111525299,
+    "n_samples": 276
+  },
+  {
+    "step": 120,
+    "epoch": 0.75,
+    "mean_logit": -1.481704174615173,
+    "mean_probability": 0.29136019753693077,
+    "n_samples": 276
+  },
+  {
+    "step": 160,
+    "epoch": 1.0,
+    "mean_logit": -1.122222495528505,
+    "mean_probability": 0.3363585532218917,
+    "n_samples": 276
+  },
+  {
+    "step": 200,
+    "epoch": 1.25,
+    "mean_logit": -1.6323983859392288,
+    "mean_probability": 0.26897169811521404,
+    "n_samples": 276
+  },
+  {
+    "step": 240,
+    "epoch": 1.5,
+    "mean_logit": -1.7366451089796813,
+    "mean_probability": 0.2665894463034972,
+    "n_samples": 276
+  },
+  {
+    "step": 280,
+    "epoch": 1.75,
+    "mean_logit": -1.5683922029599764,
+    "mean_probability": 0.27711224609377627,
+    "n_samples": 276
+  },
+  {
+    "step": 320,
+    "epoch": 2.0,
+    "mean_logit": -1.747892763627612,
+    "mean_probability": 0.25729278252232096,
+    "n_samples": 276
+  },
+  {
+    "step": 360,
+    "epoch": 2.25,
+    "mean_logit": -1.825670617433481,
+    "mean_probability": 0.25172845578385034,
+    "n_samples": 276
+  },
+  {
+    "step": 400,
+    "epoch": 2.5,
+    "mean_logit": -1.9557141723192257,
+    "mean_probability": 0.23228317251238165,
+    "n_samples": 276
+  },
+  {
+    "step": 440,
+    "epoch": 2.75,
+    "mean_logit": -1.8895805509443786,
+    "mean_probability": 0.2376514055085232,
+    "n_samples": 276
+  },
+  {
+    "step": 480,
+    "epoch": 3.0,
+    "mean_logit": -1.908904483406872,
+    "mean_probability": 0.24091337246019306,
+    "n_samples": 276
+  },
+  {
+    "step": 520,
+    "epoch": 3.25,
+    "mean_logit": -2.009190763471702,
+    "mean_probability": 0.22246561240977633,
+    "n_samples": 276
+  },
+  {
+    "step": 560,
+    "epoch": 3.5,
+    "mean_logit": -1.9151147499349832,
+    "mean_probability": 0.23102151758946016,
+    "n_samples": 276
+  },
+  {
+    "step": 600,
+    "epoch": 3.75,
+    "mean_logit": -1.754342304839604,
+    "mean_probability": 0.2543244957624169,
+    "n_samples": 276
+  },
+  {
+    "step": 640,
+    "epoch": 4.0,
+    "mean_logit": -1.8526676516386047,
+    "mean_probability": 0.24365485222907085,
+    "n_samples": 276
+  }
+]

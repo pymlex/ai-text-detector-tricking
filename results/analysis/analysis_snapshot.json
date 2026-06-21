@@ -1,0 +1,27 @@
+{
+  "preference_stats": {
+    "train_rows": 8891,
+    "pairs_built": 6396,
+    "pairs_skipped_tie": 2495,
+    "pairs_skipped_empty": 0,
+    "logit_margin_threshold": 1.0
+  },
+  "logit_probe": {
+    "n_samples": 512,
+    "mean_abs_logit_diff": 2.4227244169996993,
+    "median_abs_logit_diff": 1.7991647124290466,
+    "p25_abs_logit_diff": 0.8724294900894165,
+    "p75_abs_logit_diff": 3.355437323451042,
+    "max_abs_logit_diff": 11.23760199546814
+  },
+  "training_monitor": {
+    "n_monitor_samples": 276,
+    "step0_mean_probability": 0.67397724253445,
+    "final_mean_probability": 0.2436548522290708,
+    "step0_mean_logit": 1.6684130907456889,
+    "final_mean_logit": -1.8526676516386047,
+    "final_loss": 0.2555682182312012,
+    "final_reward_accuracy": null
+  },
+  "evaluation": null
+}
