@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="DPO training against Oculus detector")
     parser.add_argument(
         "--step",
-        choices=["prepare", "preferences", "train", "evaluate", "plot", "all"],
+        choices=["prepare", "preferences", "train", "evaluate", "plot", "analyze", "publish", "all"],
         default="all",
     )
     return parser.parse_args()
@@ -51,6 +51,23 @@ def main() -> None:
         from plotting.figures import plot_training_summary
 
         plot_training_summary(MONITORING_DIR, PLOTS_DIR)
+
+    if args.step in {"analyze", "all"}:
+        from analysis.run_analysis import run_analysis
+
+        run_analysis()
+
+    if args.step == "publish":
+        import subprocess
+        import sys
+
+        subprocess.run([sys.executable, "scripts/publish_all.py"], check=True)
+
+    if args.step == "all":
+        import subprocess
+        import sys
+
+        subprocess.run([sys.executable, "scripts/publish_all.py", "--skip-analysis"], check=True)
 
 
 if __name__ == "__main__":

@@ -84,12 +84,18 @@ ai-text-detector-tricking/
 │   ├── install_ubuntu_jupyter.sh
 │   ├── run_all.sh
 │   ├── setup_gh_auth.py
+│   ├── analyze_logit_margin.py
+│   ├── analyze_results.py
+│   ├── publish_all.py
+│   ├── publish_all.sh
 │   ├── push_dataset_hf.py
 │   ├── push_model_hf.py
 │   └── push_results_github.py
-├── templates/
-│   ├── dataset_card.md
-│   └── model_card.md
+├── analysis/
+│   ├── collect.py
+│   ├── narrative.py
+│   ├── cards.py
+│   └── run_analysis.py
 └── results/
     ├── data/
     ├── preferences/
@@ -126,8 +132,11 @@ python scripts/analyze_logit_margin.py
 python main.py --step preferences
 python main.py --step train
 python main.py --step evaluate
-python main.py --step plot
+python main.py --step analyze
+bash scripts/publish_all.sh
 ```
+
+`analyze` builds `results/analysis/ANALYSIS.md`, analysis plots under `results/plots/analysis/`, and HF cards under `results/cards/`. `publish_all` pushes the DPO dataset and assets to Hugging Face, the fine-tuned model with evaluation figures, and metrics with predictions to GitHub.
 
 Probe outputs: `results/preferences/logit_margin_probe.csv`, `results/plots/logit_margin_probe_hist.png`, `results/plots/logit_chosen_rejected_hist.png`. Set `PREFERENCE_LOGIT_MARGIN` in `.env` from the histogram before building preferences.
 
@@ -151,7 +160,10 @@ bash scripts/run_all.sh
 | `results/metrics/final_*_scores.csv` | Per-text detector scores |
 | `results/metrics/evaluation_report.json` | Aggregated metrics |
 | `results/plots/detector_probability_hist_*.png` | Validation and test histograms |
-| `results/plots/confusion_matrix_*.png` | Confusion matrices |
+| `results/analysis/ANALYSIS.md` | Narrative analysis with metrics |
+| `results/cards/model_card.md` | Generated Hugging Face model card |
+| `results/cards/dataset_card.md` | Generated Hugging Face dataset card |
+| `results/plots/analysis/` | Analysis figures for GitHub and HF |
 
 ## Environment variables
 

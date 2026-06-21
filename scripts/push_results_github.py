@@ -17,7 +17,7 @@ def main() -> None:
     parser.add_argument(
         "--message",
         type=str,
-        default="Ubuntu Jupyter: DPO detector evasion results",
+        default="Publish DPO detector evasion results and analysis",
     )
     parser.add_argument(
         "--repo-root",
@@ -35,10 +35,20 @@ def main() -> None:
         git(["config", "user.email", github_email], repo_root)
 
     results_root = repo_root / "results"
-    for subdir in ("plots", "metrics", "monitoring"):
+    for subdir in ("plots", "metrics", "monitoring", "analysis", "cards"):
         (results_root / subdir).mkdir(parents=True, exist_ok=True)
 
-    git(["add", "results/plots/", "results/metrics/", "results/monitoring/"], repo_root)
+    git(
+        [
+            "add",
+            "results/plots/",
+            "results/metrics/",
+            "results/monitoring/",
+            "results/analysis/",
+            "results/cards/",
+        ],
+        repo_root,
+    )
     status = git(["status", "--porcelain", "results/"], repo_root, check=False)
     if not status.stdout.strip():
         print("No changes in results/ to commit")

@@ -12,6 +12,8 @@ METRICS_DIR = RESULTS_DIR / "metrics"
 CHECKPOINTS_DIR = RESULTS_DIR / "checkpoints"
 PREFERENCES_DIR = RESULTS_DIR / "preferences"
 MONITORING_DIR = RESULTS_DIR / "monitoring"
+ANALYSIS_DIR = RESULTS_DIR / "analysis"
+CARDS_DIR = RESULTS_DIR / "cards"
 HF_CACHE_DIR = Path(env_str("HF_CACHE_DIR", "hf_cache"))
 
 
@@ -25,6 +27,8 @@ def ensure_result_dirs() -> None:
         CHECKPOINTS_DIR,
         PREFERENCES_DIR,
         MONITORING_DIR,
+        ANALYSIS_DIR,
+        CARDS_DIR,
         HF_CACHE_DIR,
     ):
         path.mkdir(parents=True, exist_ok=True)
