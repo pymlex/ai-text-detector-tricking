@@ -16,7 +16,7 @@ DPO fine-tune of [Qwen/Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.
 
 ## Training objective
 
-Preference pairs are built before optimisation. For each train abstract, two base-model paraphrases are ranked by detector AI probability. DPO with $\beta = 0.1$ increases the relative log-probability of the lower-scoring paraphrase.
+Preference pairs are built before optimisation. For each train abstract, two base-model paraphrases are ranked by detector AI probability. DPO with beta = 0.1 increases the relative log-probability of the lower-scoring paraphrase.
 
 ## Intended use
 
@@ -64,11 +64,11 @@ print(answer)
 
 ## Evaluation setup
 
-Hardware target: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Validation and test abstracts come from [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es). Metrics treat generated paraphrases as AI class with label $1$ and apply threshold $0.5$ on detector probability.
+Hardware target: NVIDIA RTX 5090, Ubuntu Jupyter, CUDA 13.0+, bf16 training and inference. Validation and test abstracts come from [Flaglab/academic-knowledge-abstracts-es](https://huggingface.co/datasets/Flaglab/academic-knowledge-abstracts-es). Metrics treat generated paraphrases as AI class with label 1 and apply threshold 0.5 on detector probability.
 
 ## Source code
 
-[github.com/pymlex/ai-text-detector-tricking](https://github.com/pymlex/ai-text-detector-tricking)
+The full pipeline is published on [GitHub](https://github.com/pymlex/ai-text-detector-tricking).
 
 ## Citation
 

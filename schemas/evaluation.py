@@ -11,9 +11,15 @@ class SplitMetrics(BaseModel):
     recall: float
     f1: float
     mcc: float
-    roc_auc: float
+    roc_auc: float | None
     mean_logit: float
     mean_probability: float
+
+
+def format_optional_float(value: float | None, digits: int = 4) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.{digits}f}"
 
 
 class EvaluationReport(BaseModel):

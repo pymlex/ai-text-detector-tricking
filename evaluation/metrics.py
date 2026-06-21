@@ -28,6 +28,9 @@ def compute_split_metrics(
     """Compute detector classification metrics against AI label 1."""
     labels = np.ones_like(probabilities, dtype=np.int64)
     predictions = (probabilities >= threshold).astype(np.int64)
+    roc_auc = None
+    if len(np.unique(labels)) > 1:
+        roc_auc = float(roc_auc_score(labels, probabilities))
     return SplitMetrics(
         split=split,
         n_samples=int(len(probabilities)),
@@ -36,7 +39,7 @@ def compute_split_metrics(
         recall=float(recall_score(labels, predictions, zero_division=0)),
         f1=float(f1_score(labels, predictions, zero_division=0)),
         mcc=float(matthews_corrcoef(labels, predictions)),
-        roc_auc=float(roc_auc_score(labels, probabilities)),
+        roc_auc=roc_auc,
         mean_logit=float(logits.mean()),
         mean_probability=float(probabilities.mean()),
     )

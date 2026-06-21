@@ -44,7 +44,7 @@ OCULUS_CITATION = """```bibtex
 DATASET_CITATION = """```bibtex
 @dataset{zyukov2026aigeneratedtexts,
   author = {Zyukov, Alex},
-  title = {ai-generated-texts: DPO preference pairs for Spanish abstract paraphrase},
+  title = {Spanish DPO Preference Pairs for Detector Evasion},
   year = {2026},
   url = {https://huggingface.co/datasets/pymlex/ai-generated-texts},
   publisher = {Hugging Face}

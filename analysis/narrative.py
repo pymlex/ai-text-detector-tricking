@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from analysis.collect import AnalysisSnapshot
-from schemas.evaluation import SplitMetrics
+from schemas.evaluation import SplitMetrics, format_optional_float
 
 
 def _format_split_metrics(name: str, metrics: SplitMetrics) -> str:
     return (
         f"| {name} | {metrics.n_samples} | {metrics.mean_probability:.4f} | "
         f"{metrics.mean_logit:.4f} | {metrics.accuracy:.4f} | {metrics.mcc:.4f} | "
-        f"{metrics.roc_auc:.4f} | {metrics.f1:.4f} |"
+        f"{format_optional_float(metrics.roc_auc)} | {metrics.f1:.4f} |"
     )
 
 
@@ -20,7 +20,7 @@ def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
         "## Preference dataset",
         "",
         f"Train abstracts: {pref.train_rows}. DPO pairs retained: {pref.pairs_built}. "
-        f"Pairs skipped by logit margin $|z_1-z_2|<{pref.logit_margin_threshold:g}$: "
+        f"Pairs skipped by logit margin |z1 - z2| < {pref.logit_margin_threshold:g}: "
         f"{pref.pairs_skipped_tie}. Empty paraphrases: {pref.pairs_skipped_empty}.",
         "",
     ]
@@ -32,7 +32,7 @@ def render_analysis_markdown(snapshot: AnalysisSnapshot) -> str:
                 "## Logit margin probe",
                 "",
                 f"Probe size: {probe.n_samples}. "
-                f"Mean $|z_1-z_2|$: {probe.mean_abs_logit_diff:.4f}. "
+                f"Mean |z1 - z2|: {probe.mean_abs_logit_diff:.4f}. "
                 f"Median: {probe.median_abs_logit_diff:.4f}. "
                 f"IQR: [{probe.p25_abs_logit_diff:.4f}, {probe.p75_abs_logit_diff:.4f}]. "
                 f"Maximum gap: {probe.max_abs_logit_diff:.4f}.",

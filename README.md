@@ -21,88 +21,56 @@ Post-training evaluation generates one paraphrase per validation and test abstra
 ## Architecture
 
 ```mermaid
-flowchart TB
+flowchart LR
   subgraph data [Data]
+    direction TB
     HF[Flaglab abstracts]
     Filter[Token filter L le 512]
     Splits[train validation test]
+    HF --> Filter --> Splits
   end
   subgraph prefs [Preference build]
+    direction TB
     GenBase[Base Qwen paraphrase x2]
     Det1[Oculus scoring]
     Pairs[chosen rejected pairs]
+    GenBase --> Det1 --> Pairs
   end
   subgraph train [DPO]
+    direction TB
     DPOTrainer[trl DPOTrainer]
-    Mon[Validation monitor every 0.1 epoch]
+    Mon[Validation monitor]
+    DPOTrainer --> Mon
   end
   subgraph eval [Evaluation]
+    direction TB
     GenFT[Fine-tuned paraphrase]
     Det2[Oculus scoring]
-    Metrics[CSV metrics confusion matrix histograms]
+    Metrics[metrics plots]
+    GenFT --> Det2 --> Metrics
   end
-  HF --> Filter --> Splits
-  Splits --> GenBase --> Det1 --> Pairs --> DPOTrainer
-  DPOTrainer --> Mon
-  DPOTrainer --> GenFT --> Det2 --> Metrics
+  Splits --> GenBase
+  Pairs --> DPOTrainer
+  DPOTrainer --> GenFT
 ```
 
 ## Project tree
 
 ```
 ai-text-detector-tricking/
-├── main.py
-├── constants.py
-├── requirements.txt
-├── .env.example
-├── schemas/
-│   ├── detector.py
-│   ├── preferences.py
-│   └── evaluation.py
-├── utils/
-│   ├── config_loader.py
-│   └── paths.py
-├── data/
-│   └── prepare.py
-├── generation/
-│   ├── prompts.py
-│   └── paraphrase.py
-├── detector/
-│   ├── detector_arch.py
-│   └── scoring.py
-├── preferences/
-│   └── build_dpo_dataset.py
-├── training/
-│   ├── dpo_train.py
-│   └── callbacks.py
-├── evaluation/
-│   ├── metrics.py
-│   └── evaluate.py
-├── plotting/
-│   └── figures.py
-├── scripts/
-│   ├── install_ubuntu_jupyter.sh
-│   ├── run_all.sh
-│   ├── setup_gh_auth.py
-│   ├── analyze_logit_margin.py
-│   ├── analyze_results.py
-│   ├── publish_all.py
-│   ├── publish_all.sh
-│   ├── push_dataset_hf.py
-│   ├── push_model_hf.py
-│   └── push_results_github.py
-├── analysis/
-│   ├── collect.py
-│   ├── narrative.py
-│   ├── cards.py
-│   └── run_analysis.py
-└── results/
-    ├── data/
-    ├── preferences/
-    ├── checkpoints/
-    ├── monitoring/
-    ├── metrics/
-    └── plots/
+├── main.py, constants.py, requirements.txt, .env.example
+├── schemas/          detector, preferences, evaluation
+├── utils/            config_loader, paths
+├── data/             prepare
+├── generation/       prompts, paraphrase
+├── detector/         detector_arch, scoring
+├── preferences/      build_dpo_dataset
+├── training/         dpo_train, callbacks, history
+├── evaluation/       metrics, evaluate
+├── plotting/         figures, analysis_figures
+├── analysis/         collect, narrative, cards, run_analysis
+├── scripts/          install, run_all, publish_*, push_*
+└── results/          data, preferences, checkpoints, monitoring, metrics, plots
 ```
 
 ## Detector

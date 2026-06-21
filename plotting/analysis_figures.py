@@ -56,31 +56,57 @@ def plot_training_and_monitor(snapshot: AnalysisSnapshot) -> Path | None:
         return None
 
     output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(3, 1, figsize=(10, 10), sharex=False)
+    fig, axes = plt.subplots(4, 1, figsize=(10, 12), sharex=False)
 
     if train_path.exists():
         train_frame = pd.read_csv(train_path).dropna(subset=["loss"])
         if not train_frame.empty:
-            step_col = "step" if "step" in train_frame.columns else train_frame.index
             steps = train_frame["step"] if "step" in train_frame.columns else train_frame.index
             axes[0].plot(steps, train_frame["loss"], marker="o", markersize=3)
             axes[0].set_ylabel("DPO loss")
             axes[0].set_title("Training loss")
             axes[0].grid(alpha=0.5)
             if "rewards/accuracies" in train_frame.columns:
-                axes[1].plot(steps, train_frame["rewards/accuracies"], marker="o", markersize=3, color="tab:green")
-                axes[1].set_ylabel("Reward accuracy")
-                axes[1].grid(alpha=0.5)
+                reward_frame = train_frame.dropna(subset=["rewards/accuracies"])
+                if not reward_frame.empty:
+                    reward_steps = (
+                        reward_frame["step"]
+                        if "step" in reward_frame.columns
+                        else reward_frame.index
+                    )
+                    axes[1].plot(
+                        reward_steps,
+                        reward_frame["rewards/accuracies"],
+                        marker="o",
+                        markersize=3,
+                        color="tab:green",
+                    )
+            axes[1].set_ylabel("Reward accuracy")
+            axes[1].set_title("Reward accuracy")
+            axes[1].grid(alpha=0.5)
 
     if valid_path.exists():
         valid_frame = pd.read_csv(valid_path)
         if not valid_frame.empty:
-            axes[2].plot(valid_frame["step"], valid_frame["mean_probability"], marker="o", label="mean_prob")
-            axes[2].plot(valid_frame["step"], valid_frame["mean_logit"], marker="s", label="mean_logit")
-            axes[2].set_xlabel("Training step")
-            axes[2].set_ylabel("Validation detector score")
-            axes[2].legend()
+            axes[2].plot(
+                valid_frame["step"],
+                valid_frame["mean_probability"],
+                marker="o",
+                color="tab:blue",
+            )
+            axes[2].set_ylabel("Mean AI probability")
+            axes[2].set_title("Validation mean detector probability")
             axes[2].grid(alpha=0.5)
+            axes[3].plot(
+                valid_frame["step"],
+                valid_frame["mean_logit"],
+                marker="s",
+                color="tab:orange",
+            )
+            axes[3].set_xlabel("Training step")
+            axes[3].set_ylabel("Mean logit")
+            axes[3].set_title("Validation mean detector logit")
+            axes[3].grid(alpha=0.5)
 
     fig.tight_layout()
     path = output_dir / "training_monitor_analysis.png"
@@ -95,30 +121,41 @@ def plot_evaluation_summary() -> Path | None:
         return None
     report = json.loads(report_path.read_text(encoding="utf-8"))
     labels = ["validation", "test"]
-    metrics = ["mean_probability", "mean_logit", "mcc", "roc_auc", "f1"]
-    values = {
-        metric: [float(report[split][metric]) for split in labels]
-        for metric in metrics
-    }
+    x = np.arange(len(labels))
+    width = 0.55
 
     output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 
-    x = np.arange(len(labels))
-    width = 0.35
-    axes[0].bar(x - width / 2, values["mean_probability"], width, label="mean_prob")
-    axes[0].bar(x + width / 2, values["mean_logit"], width, label="mean_logit")
+    prob_values = [float(report[split]["mean_probability"]) for split in labels]
+    axes[0].bar(x, prob_values, width=width, color="tab:blue")
+    axes[0].set_ylabel("Mean AI probability")
+    axes[0].set_title("Mean detector probability on paraphrases")
     axes[0].set_xticks(x, labels)
-    axes[0].set_title("Final detector scores on paraphrases")
-    axes[0].legend()
     axes[0].grid(alpha=0.5)
 
-    axes[1].bar(x - width / 2, values["mcc"], width, label="MCC")
-    axes[1].bar(x + width / 2, values["roc_auc"], width, label="ROC-AUC")
+    logit_values = [float(report[split]["mean_logit"]) for split in labels]
+    axes[1].bar(x, logit_values, width=width, color="tab:orange")
+    axes[1].set_ylabel("Mean logit")
+    axes[1].set_title("Mean detector logit on paraphrases")
     axes[1].set_xticks(x, labels)
-    axes[1].set_title("Classification metrics, label AI, threshold 0.5")
-    axes[1].legend()
     axes[1].grid(alpha=0.5)
+
+    mcc_values = [float(report[split]["mcc"]) for split in labels]
+    f1_values = [float(report[split]["f1"]) for split in labels]
+    roc_values = [
+        float(report[split]["roc_auc"]) if report[split]["roc_auc"] is not None else np.nan
+        for split in labels
+    ]
+    metric_width = width / 3
+    axes[2].bar(x - metric_width, mcc_values, width=metric_width, label="MCC")
+    axes[2].bar(x, f1_values, width=metric_width, label="F1")
+    axes[2].bar(x + metric_width, roc_values, width=metric_width, label="ROC-AUC")
+    axes[2].set_ylabel("Score")
+    axes[2].set_title("Classification metrics, label AI, threshold 0.5")
+    axes[2].set_xticks(x, labels)
+    axes[2].legend()
+    axes[2].grid(alpha=0.5)
 
     fig.tight_layout()
     path = output_dir / "evaluation_summary.png"
@@ -137,18 +174,22 @@ def plot_score_distributions() -> Path | None:
         return None
 
     output_dir = _analysis_plot_dir()
-    fig, axes = plt.subplots(1, len(frames), figsize=(6 * len(frames), 5))
-    if len(frames) == 1:
-        axes = [axes]
+    split_names = list(frames.keys())
+    fig, axes = plt.subplots(2, len(split_names), figsize=(6 * len(split_names), 8), sharex="col")
+    if len(split_names) == 1:
+        axes = np.array(axes).reshape(2, 1)
 
-    for axis, (split_name, frame) in zip(axes, frames.items(), strict=True):
-        axis.hist(frame["detector_logit"], bins=50, alpha=0.7, label="logit")
-        axis.hist(frame["detector_probability"], bins=50, alpha=0.7, label="probability")
-        axis.set_title(f"{split_name}, n={len(frame)}")
-        axis.set_xlabel("Detector score")
-        axis.set_ylabel("Count")
-        axis.legend()
-        axis.grid(alpha=0.5)
+    for column_index, split_name in enumerate(split_names):
+        frame = frames[split_name]
+        axes[0, column_index].hist(frame["detector_logit"], bins=50, color="tab:orange")
+        axes[0, column_index].set_title(f"{split_name}, logit, n={len(frame)}")
+        axes[0, column_index].set_ylabel("Count")
+        axes[0, column_index].grid(alpha=0.5)
+        axes[1, column_index].hist(frame["detector_probability"], bins=50, color="tab:blue")
+        axes[1, column_index].set_title(f"{split_name}, probability, n={len(frame)}")
+        axes[1, column_index].set_xlabel("Detector score")
+        axes[1, column_index].set_ylabel("Count")
+        axes[1, column_index].grid(alpha=0.5)
 
     fig.tight_layout()
     path = output_dir / "score_distributions.png"
